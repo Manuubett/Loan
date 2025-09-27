@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loan App Dashboard</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
     import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-    import { getFirestore, collection, doc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+    import { getFirestore, collection, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDsRwHSbZUL9VkZiyx9gDRgblotaVAHHiQ",
       authDomain: "sample-329e1.firebaseapp.com",
@@ -18,7 +18,6 @@
       appId: "1:880950005868:web:296a55912477a4b4a44849"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -38,79 +37,88 @@
       window.location.href = "cal.html";
     }
 
-    window.loadUserData = async function() {
+    window.loadUserData = function() {
       const phone = localStorage.getItem("userPhone");
       if (!phone) {
         window.location.href = "log.html";
         return;
       }
 
-      // User Profile
-      const userDoc = await getDoc(doc(db, "users", phone));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        document.getElementById("userName").textContent = data.name;
-        document.getElementById("userEmail").textContent = data.email;
-        document.getElementById("userPhone").textContent = data.phone;
-      }
+      const userRef = doc(db, "users", phone);
 
-      // Loan History
+      // Real-time profile
+      onSnapshot(userRef, (userDoc) => {
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          document.getElementById("userName").textContent = data.name;
+          document.getElementById("userEmail").textContent = data.email;
+          document.getElementById("userPhone").textContent = data.phone;
+        }
+      });
+
+      // Real-time loan history
       const loansQuery = query(collection(db, "loans"), where("phone", "==", phone));
-      const loansSnap = await getDocs(loansQuery);
-      let rows = "";
-      loansSnap.forEach(docSnap => {
-        const loan = docSnap.data();
-        rows += `<tr>
-          <td>Ksh ${loan.amount}</td>
-          <td>${loan.status}</td>
-          <td>${loan.date}</td>
-        </tr>`;
+      onSnapshot(loansQuery, (loanSnap) => {
+        let rows = "";
+        loanSnap.forEach(docSnap => {
+          const loan = docSnap.data();
+          rows += `<tr>
+            <td>Ksh ${loan.amount}</td>
+            <td>${loan.status}</td>
+            <td>${loan.date}</td>
+          </tr>`;
+        });
+        document.getElementById("loanHistory").innerHTML = rows || `<tr><td colspan="3">No loan records found.</td></tr>`;
       });
-      document.getElementById("loanHistory").innerHTML = rows || `<tr><td colspan="3">No loan records found.</td></tr>`;
 
-      // Notifications
+      // Real-time notifications
       const notifQuery = query(collection(db, "notifications"), where("phone", "==", phone));
-      const notifSnap = await getDocs(notifQuery);
-      let notifHTML = "";
-      notifSnap.forEach(docSnap => {
-        const note = docSnap.data();
-        notifHTML += `<div class="notification">📩 ${note.message}</div>`;
+      onSnapshot(notifQuery, (notifSnap) => {
+        let notifHTML = "";
+        notifSnap.forEach(docSnap => {
+          const note = docSnap.data();
+          notifHTML += `<div class="notification">📩 ${note.message}</div>`;
+        });
+        document.getElementById("notifications").innerHTML = notifHTML || `<div class="notification">📢 Welcome to your Loan Dashboard!</div>`;
       });
-      document.getElementById("notifications").innerHTML = notifHTML || `<div class="notification">📢 Welcome to your Loan Dashboard!</div>`;
     }
 
     window.addEventListener("DOMContentLoaded", loadUserData);
   </script>
+
   <style>
-    /* Keep your existing CSS */
-    body { font-family: "Segoe UI", sans-serif; background: #f4f6f9; margin: 0; padding: 0; display: flex; }
-    header { background: #2c3e50; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { margin: 0; font-size: 22px; }
-    .sidebar { width: 220px; background: #2c3e50; color: #fff; height: 100vh; position: fixed; left: -220px; top: 0; transition: left 0.3s; padding-top: 60px; }
+    html, body { height: 100%; margin: 0; font-family: "Segoe UI", sans-serif; overflow: hidden; }
+    body { display: flex; }
+    .sidebar {
+      width: 220px; background: #2c3e50; color: #fff;
+      height: 100vh; position: fixed; left: -220px; top: 0; transition: left 0.3s; padding-top: 60px; overflow-y: auto;
+    }
     .sidebar.active { left: 0; }
     .sidebar a { display: block; padding: 12px 20px; color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidebar a:hover { background: #1a252f; }
-    .toggle-btn { position: absolute; left: 15px; top: 15px; font-size: 20px; cursor: pointer; color: #fff; }
-    .content { margin-left: 0; flex: 1; transition: margin-left 0.3s; }
+    .toggle-btn { position: absolute; left: 15px; top: 15px; font-size: 24px; cursor: pointer; color: #fff; }
+    .content { margin-left: 0; flex: 1; transition: margin-left 0.3s; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
     .content.active { margin-left: 220px; }
-    .container { padding: 20px; display: grid; grid-template-columns: 1fr 2fr; grid-gap: 20px; }
-    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); }
+    header { background: #2c3e50; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    header h1 { margin: 0; font-size: 22px; }
+    .container { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); grid-gap: 20px; flex: 1; }
+    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
     h2 { margin-top: 0; font-size: 18px; color: #2c3e50; }
     .profile p, .loan-info p { margin: 5px 0; font-size: 14px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    table th, table td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+    table th, table td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
     table th { background: #f0f2f5; }
     .notification { font-size: 14px; padding: 10px; background: #fdf5e6; border-left: 4px solid #f39c12; margin: 8px 0; border-radius: 6px; }
-    .offers { background: linear-gradient(135deg, #1abc9c, #16a085); color: #fff; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 20px; }
+    .offers { background: linear-gradient(135deg, #1abc9c, #16a085); color: #fff; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 20px; flex-shrink: 0; }
     .offers h2 { color: #fff; font-size: 20px; margin-bottom: 10px; }
     .offers ul { list-style: none; padding: 0; margin: 0 0 15px 0; }
     .offers ul li { margin: 8px 0; font-size: 15px; }
     .offers button { background: #f39c12; border: none; padding: 10px 20px; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 16px; }
     .offers button:hover { background: #e67e22; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <a href="loan dash.html">🏠 Dashboard</a>
     <a href="cal.html">📊 My Eligibility</a>
@@ -119,7 +127,6 @@
     <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
 
-  <!-- Main content -->
   <div class="content" id="content">
     <header>
       <span class="toggle-btn" onclick="toggleSidebar()">☰</span>
@@ -166,7 +173,7 @@
         <li>✅ Affordable interest rates as low as <strong>5%</strong></li>
         <li>✅ Instant approval in minutes</li>
       </ul>
-      <button onclick="applyLoan()">check  Eligibility Now</button>
+      <button onclick="applyLoan()">Check Eligibility Now</button>
     </div>
   </div>
 </body>

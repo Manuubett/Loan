@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Application</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #219150;
+    }
+    .info {
+      margin-top: 15px;
+      padding: 12px;
+      background: #ecf0f1;
+      border-radius: 6px;
+      font-size: 15px;
+      color: #2c3e50;
+    }
+    .notification {
+      font-size: 14px;
+      padding: 10px;
+      background: #fdf5e6;
+      border-left: 4px solid #f39c12;
+      margin: 8px 0;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Apply for a Loan</h1>
+  </header>
+
+  <div class="container">
+    <h2>Loan Application Form</h2>
+    <div class="info" id="eligibilityInfo">Loading your eligibility...</div>
+
+    <form id="loanForm">
+      <label for="amount">Loan Amount (Ksh)</label>
+      <input type="number" id="amount" required>
+
+      <label for="purpose">Purpose of Loan</label>
+      <textarea id="purpose" rows="3" required></textarea>
+
+      <label for="term">Loan Term</label>
+      <select id="term" required>
+        <option value="">--Select Term--</option>
+        <option value="3">3 months</option>
+        <option value="6">6 months</option>
+        <option value="12">12 months</option>
+      </select>
+
+      <label for="employment">Employment Status</label>
+      <select id="employment" required>
+        <option value="">--Select Status--</option>
+        <option value="employed">Employed</option>
+        <option value="self-employed">Self-Employed</option>
+        <option value="unemployed">Unemployed</option>
+      </select>
+
+      <button type="submit">Submit Application</button>
+    </form>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsRwHSbZUL9VkZiyx9gDRgblotaVAHHiQ",
+      authDomain: "sample-329e1.firebaseapp.com",
+      projectId: "sample-329e1",
+      storageBucket: "sample-329e1.firebasestorage.app",
+      messagingSenderId: "880950005868",
+      appId: "1:880950005868:web:296a55912477a4b4a44849"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Load eligibility from localStorage
+    let eligibility = JSON.parse(localStorage.getItem("loanEligibility"));
+    let maxLoan = 0;
+    if (eligibility && eligibility.loanLimit) {
+      maxLoan = eligibility.loanLimit;
+      document.getElementById("eligibilityInfo").textContent =
+        `✅ Based on your income, your maximum loan eligibility is Ksh ${maxLoan.toLocaleString()}.`;
+    } else {
+      document.getElementById("eligibilityInfo").textContent =
+        "❌ Eligibility not found. Please go back and check your loan limit.";
+      document.getElementById("loanForm").style.display = "none";
+    }
+
+    document.getElementById("loanForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const amount = parseFloat(document.getElementById("amount").value);
+      const purpose = document.getElementById("purpose").value;
+      const term = document.getElementById("term").value;
+      const employment = document.getElementById("employment").value;
+
+      if (amount > maxLoan) {
+        alert(`❌ You cannot apply for more than your eligibility limit of Ksh ${maxLoan.toLocaleString()}.`);
+        return;
+      }
+
+      try {
+        await db.collection("loanApplications").add({
+          idNumber: eligibility.idNumber,
+          phone: eligibility.phone,
+          amount,
+          purpose,
+          term,
+          employment,
+          status: "Pending",
+          createdAt: new Date()
+        });
+
+        // Store success message for notification page
+        localStorage.setItem("loanSuccessMessage", "✅ Your loan application was submitted successfully!");
+
+        // Redirect to notifications page
+        window.location.href = "notification.html";
+
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        alert("❌ Failed to submit loan application. Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>
