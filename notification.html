@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Notifications</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .notification {
+      background: #fdf5e6;
+      border-left: 4px solid #f39c12;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .notification strong {
+      color: #2c3e50;
+    }
+    .loan-status {
+      background: #e0f7fa;
+      border-left: 4px solid #00bcd4;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .loan-status strong {
+      color: #007c91;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Loan Notifications</h1>
+  </header>
+
+  <div class="container">
+    <h2>Messages & Loan Status</h2>
+    <div id="notificationsContainer">
+      <p>Loading notifications...</p>
+    </div>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsRwHSbZUL9VkZiyx9gDRgblotaVAHHiQ",
+      authDomain: "sample-329e1.firebaseapp.com",
+      projectId: "sample-329e1",
+      storageBucket: "sample-329e1.appspot.com",
+      messagingSenderId: "880950005868",
+      appId: "1:880950005868:web:296a55912477a4b4a44849"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const container = document.getElementById("notificationsContainer");
+
+    // Get logged-in user's phone number
+    const phone = localStorage.getItem("userPhone");
+    if (!phone) {
+      alert("You are not logged in.");
+      window.location.href = "log.html";
+    }
+
+    // Load notifications and loan status
+    db.collection("users").where("phone", "==", phone)
+      .onSnapshot(snapshot => {
+        container.innerHTML = "";
+        if (snapshot.empty) {
+          container.innerHTML = "<p>No notifications found.</p>";
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+
+          // Admin messages
+          if (data.adminReply) {
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "notification";
+            msgDiv.innerHTML = `<strong>Message from Admin:</strong> ${data.adminReply}`;
+            container.appendChild(msgDiv);
+          }
+
+          // Loan status
+          const statusDiv = document.createElement("div");
+          statusDiv.className = "loan-status";
+          statusDiv.innerHTML = `<strong>Loan Status:</strong> ${data.loanStatus || "Pending"}`;
+          container.appendChild(statusDiv);
+        });
+      });
+
+    // Optional: Show success message from loan application
+    const successMessage = localStorage.getItem("loanSuccessMessage");
+    if (successMessage) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "notification";
+      msgDiv.innerHTML = successMessage;
+      container.prepend(msgDiv);
+      localStorage.removeItem("loanSuccessMessage");
+    }
+  </script>
+</body>
+</html>

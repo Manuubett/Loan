@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Loan Users</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+    th {
+      background: #2c3e50;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    button {
+      padding: 6px 12px;
+      margin: 2px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .approve { background: #27ae60; color: #fff; }
+    .decline { background: #e74c3c; color: #fff; }
+    .replyBtn { background: #3498db; color: #fff; }
+    .replyBox {
+      display: flex;
+      margin-top: 5px;
+    }
+    .replyBox input {
+      flex: 1;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .replyBox button {
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Admin Panel - Loan Payment Verification</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID Number</th>
+        <th>Phone</th>
+        <th>M-PESA Code</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Admin Reply</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="userTable">
+      <tr><td colspan="7">Loading users...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsRwHSbZUL9VkZiyx9gDRgblotaVAHHiQ",
+      authDomain: "sample-329e1.firebaseapp.com",
+      projectId: "sample-329e1",
+      storageBucket: "sample-329e1.appspot.com",
+      messagingSenderId: "880950005868",
+      appId: "1:880950005868:web:296a55912477a4b4a44849"
+    };
+
+    // Init Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const table = document.getElementById("userTable");
+
+    // Load users in real-time
+    db.collection("users").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+      table.innerHTML = "";
+      if (snapshot.empty) {
+        table.innerHTML = "<tr><td colspan='7'>No records found.</td></tr>";
+        return;
+      }
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td>${data.idNumber || "—"}</td>
+          <td>${data.phone}</td>
+          <td>${data.mpesaCode || "—"}</td>
+          <td>Ksh ${data.amountPaid || "99"}</td>
+          <td>${data.loanStatus || "Pending"}</td>
+          <td>${data.adminReply || "—"}</td>
+          <td>
+            <button class="approve" onclick="updateStatus('${doc.id}', 'Approved')">Approve</button>
+            <button class="decline" onclick="updateStatus('${doc.id}', 'Declined')">Decline</button>
+            <div class="replyBox">
+              <input type="text" id="reply-${doc.id}" placeholder="Type reply...">
+              <button class="replyBtn" onclick="sendReply('${doc.id}')">Send</button>
+            </div>
+          </td>
+        `;
+
+        table.appendChild(row);
+      });
+    });
+
+    // Update loan status
+    function updateStatus(docId, status) {
+      db.collection("users").doc(docId).update({
+        loanStatus: status,
+        adminReply: status === "Approved" 
+          ? "Your loan request has been approved. Await disbursement." 
+          : "Your loan request was declined."
+      });
+      alert("Status updated to " + status);
+    }
+
+    // Send admin reply
+    function sendReply(docId) {
+      const replyText = document.getElementById("reply-" + docId).value.trim();
+      if (!replyText) {
+        alert("Enter a reply message first.");
+        return;
+      }
+      db.collection("users").doc(docId).update({
+        adminReply: replyText,
+        loanStatus: "Processing"
+      }).then(() => {
+        alert("Reply sent.");
+        document.getElementById("reply-" + docId).value = "";
+      });
+    }
+  </script>
+</body>
+</html>

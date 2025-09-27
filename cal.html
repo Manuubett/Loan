@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Eligibility Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 15px;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background: #2980b9;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #216f9b;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #ecf0f1;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .proceed-btn {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      width: 100%;
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .proceed-btn:hover {
+      background: #1e8449;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Loan Eligibility Calculator</h1>
+  </header>
+
+  <div class="container">
+    <h2>Check Your Loan Limit</h2>
+    <form id="calcForm">
+      <label for="idNumber">National ID Number</label>
+      <input type="text" id="idNumber" required>
+
+      <label for="phone">Active Mobile Number</label>
+      <input type="tel" id="phone" required placeholder="e.g. 0712345678">
+
+      <label for="income">Monthly Income (Ksh)</label>
+      <input type="number" id="income" required>
+
+      <label for="expenses">Monthly Expenses (Ksh)</label>
+      <input type="number" id="expenses" required>
+
+      <button type="submit">Calculate Loan Limit</button>
+    </form>
+
+    <div class="result" id="result"></div>
+    <button class="proceed-btn" id="proceedBtn" onclick="goToApplication()">Proceed to Loan Application</button>
+  </div>
+
+  <script>
+    const calcForm = document.getElementById("calcForm");
+    const resultDiv = document.getElementById("result");
+    const proceedBtn = document.getElementById("proceedBtn");
+
+    calcForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const idNumber = document.getElementById("idNumber").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const income = parseFloat(document.getElementById("income").value);
+      const expenses = parseFloat(document.getElementById("expenses").value);
+
+      if (idNumber.length < 6) {
+        alert("Please enter a valid ID Number.");
+        return;
+      }
+      if (!phone.match(/^07\d{8}$/)) {
+        alert("Please enter a valid mobile number (e.g., 07XXXXXXXX).");
+        return;
+      }
+
+      const disposableIncome = income - expenses;
+      let loanLimit = 0;
+
+      if (disposableIncome > 0) {
+        loanLimit = disposableIncome * 3;
+      }
+
+      if (loanLimit > 0) {
+        resultDiv.textContent = `✅ Congratulations! You qualify for a loan up to Ksh ${loanLimit.toLocaleString()}.`;
+        proceedBtn.style.display = "block";
+        localStorage.setItem("loanEligibility", JSON.stringify({ idNumber, phone, loanLimit }));
+      } else {
+        resultDiv.textContent = "❌ Sorry, your expenses exceed income. You do not qualify for a loan.";
+        proceedBtn.style.display = "none";
+      }
+    });
+
+    function goToApplication() {
+      window.location.href = "apply.html"; // link to your loan application page
+    }
+  </script>
+</body>
+</html>
