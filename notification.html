@@ -3,67 +3,454 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loan Notifications</title>
+  <title>Loan Notifications Dashboard</title>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f4f6f9;
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
-    header {
-      background: #2c3e50;
-      color: #fff;
-      padding: 15px 20px;
-      text-align: center;
+
+    :root {
+      --primary: #2c3e50;
+      --secondary: #3498db;
+      --success: #2ecc71;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --light: #f4f6f9;
+      --dark: #2c3e50;
+      --gray: #95a5a6;
+      --white: #ffffff;
     }
-    h2 {
-      color: #2c3e50;
-      text-align: center;
-      margin-top: 20px;
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f4f6f9 0%, #e8ecf1 100%);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
     }
+
     .container {
-      max-width: 700px;
-      margin: 20px auto;
+      max-width: 1000px;
+      margin: 0 auto;
       padding: 20px;
     }
+
+    header {
+      background: linear-gradient(to right, var(--primary), #34495e);
+      color: var(--white);
+      padding: 20px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      font-size: 28px;
+      color: var(--warning);
+    }
+
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 25px;
+      margin-top: 25px;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      padding: 25px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title i {
+      color: var(--secondary);
+    }
+
     .notification {
+      display: flex;
+      gap: 15px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
       background: #fdf5e6;
-      border-left: 4px solid #f39c12;
-      padding: 12px 15px;
-      margin-bottom: 12px;
-      border-radius: 6px;
+      border-left: 4px solid var(--warning);
+      animation: fadeIn 0.5s ease;
+    }
+
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--warning);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--dark);
+    }
+
+    .notification-message {
+      color: #555;
       font-size: 14px;
     }
-    .notification strong {
-      color: #2c3e50;
+
+    .notification-time {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 5px;
     }
+
     .loan-status {
+      display: flex;
+      gap: 15px;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
       background: #e0f7fa;
-      border-left: 4px solid #00bcd4;
-      padding: 12px 15px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-      font-size: 14px;
+      border-left: 4px solid var(--secondary);
+      animation: fadeIn 0.5s ease;
     }
-    .loan-status strong {
-      color: #007c91;
+
+    .status-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .status-content {
+      flex: 1;
+    }
+
+    .status-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--dark);
+    }
+
+    .status-value {
+      font-size: 14px;
+      color: #555;
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .status-pending {
+      color: var(--warning);
+    }
+
+    .status-approved {
+      color: var(--success);
+    }
+
+    .status-rejected {
+      color: var(--danger);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #34495e 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stats-icon {
+      font-size: 40px;
+      margin-bottom: 15px;
+      color: var(--warning);
+    }
+
+    .stats-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stats-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      background: var(--white);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-align: left;
+      color: var(--dark);
+      text-decoration: none;
+    }
+
+    .action-btn:hover {
+      background: #f0f4f8;
+    }
+
+    .action-btn i {
+      color: var(--secondary);
+      font-size: 18px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--gray);
+    }
+
+    .empty-state i {
+      font-size: 50px;
+      margin-bottom: 15px;
+      color: #ddd;
+    }
+
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(52, 152, 219, 0.2);
+      border-left: 4px solid var(--secondary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    .error-message {
+      background: #ffebee;
+      color: var(--danger);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid var(--danger);
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      color: var(--gray);
+      font-size: 14px;
+      border-top: 1px solid #eee;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Loan Notifications</h1>
+    <div class="header-content">
+      <div class="logo">
+        <i class="fas fa-hand-holding-usd"></i>
+        <h1>LoanFlow Dashboard</h1>
+      </div>
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <button class="logout-btn" id="logoutBtn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
   </header>
 
   <div class="container">
-    <h2>Messages & Loan Status</h2>
-    <div id="notificationsContainer">
-      <p>Loading notifications...</p>
+    <div class="dashboard">
+      <div class="main-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-bell"></i> Recent Notifications</h2>
+            <span class="badge" id="notificationCount">0 new</span>
+          </div>
+          <div id="notificationsContainer">
+            <div class="loading">
+              <div class="spinner"></div>
+              <p>Loading notifications...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-file-invoice-dollar"></i> Loan Status</h2>
+          </div>
+          <div id="loanStatusContainer">
+            <div class="loading">
+              <div class="spinner"></div>
+              <p>Loading loan status...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="card stats-card">
+          <i class="fas fa-chart-line stats-icon"></i>
+          <div class="stats-value" id="loanAmount">Ksh0</div>
+          <div class="stats-label">Current Loan Balance</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-bolt"></i> Quick Actions</h2>
+          </div>
+          <div class="quick-actions">
+            <a href="apply.html" class="action-btn">
+              <i class="fas fa-plus-circle"></i>
+              <span>Apply for New Loan</span>
+            </a>
+
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <footer>
+    <p>LoanFlow &copy; 2023. All rights reserved. | Secure banking portal</p>
+  </footer>
 
   <script>
     // Firebase config
@@ -80,50 +467,169 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const container = document.getElementById("notificationsContainer");
+    // DOM elements
+    const notificationsContainer = document.getElementById("notificationsContainer");
+    const loanStatusContainer = document.getElementById("loanStatusContainer");
+    const notificationCount = document.getElementById("notificationCount");
+    const loanAmount = document.getElementById("loanAmount");
+    const userAvatar = document.getElementById("userAvatar");
+    const logoutBtn = document.getElementById("logoutBtn");
 
     // Get logged-in user's phone number
     const phone = localStorage.getItem("userPhone");
     if (!phone) {
       alert("You are not logged in.");
       window.location.href = "log.html";
+    } else {
+      // Set user avatar initial
+      userAvatar.textContent = phone.slice(-1).toUpperCase();
     }
+
+    // Logout functionality
+    logoutBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem("userPhone");
+        window.location.href = "log.html";
+      }
+    });
 
     // Load notifications and loan status
     db.collection("users").where("phone", "==", phone)
       .onSnapshot(snapshot => {
-        container.innerHTML = "";
+        let notificationItems = [];
+        let statusItems = [];
+        let newNotifications = 0;
+
         if (snapshot.empty) {
-          container.innerHTML = "<p>No notifications found.</p>";
+          notificationsContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="far fa-bell-slash"></i>
+              <p>No notifications found.</p>
+              <p>You'll see important updates here once available.</p>
+            </div>
+          `;
+          loanStatusContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="far fa-file-alt"></i>
+              <p>No loan information available.</p>
+              <p>Apply for a loan to see status updates here.</p>
+            </div>
+          `;
           return;
         }
 
         snapshot.forEach(doc => {
           const data = doc.data();
-
-          // Admin messages
+          
+          // Admin messages/notifications
           if (data.adminReply) {
-            const msgDiv = document.createElement("div");
-            msgDiv.className = "notification";
-            msgDiv.innerHTML = `<strong>Message from Admin:</strong> ${data.adminReply}`;
-            container.appendChild(msgDiv);
+            newNotifications++;
+            notificationItems.push(`
+              <div class="notification">
+                <div class="notification-icon">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div class="notification-content">
+                  <div class="notification-title">Message from Admin</div>
+                  <div class="notification-message">${data.adminReply}</div>
+                  <div class="notification-time">${data.replyTimestamp ? new Date(data.replyTimestamp.toDate()).toLocaleString() : 'Recently'}</div>
+                </div>
+              </div>
+            `);
           }
 
           // Loan status
-          const statusDiv = document.createElement("div");
-          statusDiv.className = "loan-status";
-          statusDiv.innerHTML = `<strong>Loan Status:</strong> ${data.loanStatus || "Pending"}`;
-          container.appendChild(statusDiv);
+          const statusClass = data.loanStatus ? `status-${data.loanStatus.toLowerCase()}` : 'status-pending';
+          statusItems.push(`
+            <div class="loan-status">
+              <div class="status-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <div class="status-content">
+                <div class="status-title">Current Loan Status</div>
+                <div class="status-value ${statusClass}">${data.loanStatus || "Pending Review"}</div>
+                <div class="notification-time">Last updated: ${new Date().toLocaleDateString()}</div>
+              </div>
+            </div>
+          `);
+
+          // Update loan amount if available
+          if (data.loanAmount) {
+            loanAmount.textContent = `$${parseInt(data.loanAmount).toLocaleString()}`;
+          }
         });
+
+        // Update notification count
+        notificationCount.textContent = `${newNotifications} new`;
+
+        // Update UI with notifications
+        if (notificationItems.length > 0) {
+          notificationsContainer.innerHTML = notificationItems.join('');
+        } else {
+          notificationsContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="far fa-bell-slash"></i>
+              <p>No notifications at this time.</p>
+              <p>You'll see important updates here once available.</p>
+            </div>
+          `;
+        }
+
+        // Update UI with loan status
+        if (statusItems.length > 0) {
+          loanStatusContainer.innerHTML = statusItems.join('');
+        } else {
+          loanStatusContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="far fa-file-alt"></i>
+              <p>No loan information available.</p>
+              <p>Apply for a loan to see status updates here.</p>
+            </div>
+          `;
+        }
+      }, error => {
+        console.error("Error fetching data:", error);
+        notificationsContainer.innerHTML = `
+          <div class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error loading notifications. Please try again later.</p>
+          </div>
+        `;
+        loanStatusContainer.innerHTML = `
+          <div class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Error loading loan status. Please try again later.</p>
+          </div>
+        `;
       });
 
-    // Optional: Show success message from loan application
+    // Show success message from loan application if exists
     const successMessage = localStorage.getItem("loanSuccessMessage");
     if (successMessage) {
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "notification";
-      msgDiv.innerHTML = successMessage;
-      container.prepend(msgDiv);
+      const successNotification = document.createElement('div');
+      successNotification.className = 'notification';
+      successNotification.innerHTML = `
+        <div class="notification-icon" style="background: var(--success);">
+          <i class="fas fa-check"></i>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Application Submitted</div>
+          <div class="notification-message">${successMessage}</div>
+        </div>
+      `;
+      
+      // Add to the top of notifications
+      if (notificationsContainer.firstChild) {
+        notificationsContainer.insertBefore(successNotification, notificationsContainer.firstChild);
+      } else {
+        notificationsContainer.appendChild(successNotification);
+      }
+      
+      // Update notification count
+      const currentCount = parseInt(notificationCount.textContent) || 0;
+      notificationCount.textContent = `${currentCount + 1} new`;
+      
+      // Remove from localStorage
       localStorage.removeItem("loanSuccessMessage");
     }
   </script>
