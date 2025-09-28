@@ -3,115 +3,532 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loan Application</title>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <title>QuickLoan - Apply for a Loan</title>
+  
+  <!-- Essential Meta Tags for Social Media Sharing -->
+  <meta property="og:title" content="QuickLoan - Apply for a Loan">
+  <meta property="og:description" content="Complete your loan application with QuickLoan. Fast approval, no CRB checks.">
+  <meta property="og:image" content="https://i.ibb.co/DQq1B8f/quickloan-icon.png">
+  <meta property="og:url" content="https://yourwebsite.com/apply">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QuickLoan - Apply for a Loan">
+  <meta name="twitter:description" content="Complete your loan application with QuickLoan.">
+  <meta name="twitter:image" content="https://i.ibb.co/DQq1B8f/quickloan-icon.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="https://i.ibb.co/DQq1B8f/quickloan-icon.png">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 0;
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
     }
-    header {
-      background: #2c3e50;
-      color: #fff;
-      padding: 15px;
-      text-align: center;
+    
+    body { 
+      font-family: 'Roboto', sans-serif; 
+      background: linear-gradient(135deg, #f4f6f9 0%, #e3e8f0 100%);
+      color: #333; 
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Header Styles */
+    header { 
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: #fff; 
+      padding: 15px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    header img { 
+      width: 45px; 
+      height: 45px; 
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    header h1 { 
+      font-size: 1.8em; 
+      margin: 0; 
+      font-weight: 700;
+    }
+    
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 20px;
+    }
+    
+    nav a {
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background 0.3s;
+      color: white;
+    }
+    
+    nav a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .mobile-menu {
+      display: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    /* Main Content */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
     .container {
-      max-width: 500px;
-      margin: 40px auto;
+      width: 100%;
+      max-width: 600px;
       background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
     }
-    h2 {
+    
+    .application-header {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 25px 30px;
       text-align: center;
-      color: #333;
     }
+    
+    .application-header h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .application-header p {
+      opacity: 0.9;
+      font-size: 1em;
+    }
+    
+    .application-body {
+      padding: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background: #27ae60;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background: #219150;
-    }
-    .info {
-      margin-top: 15px;
-      padding: 12px;
-      background: #ecf0f1;
-      border-radius: 6px;
-      font-size: 15px;
+      margin-bottom: 8px;
+      font-weight: 500;
       color: #2c3e50;
     }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7f8c8d;
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 15px 14px 45px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border 0.3s, box-shadow 0.3s;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .btn {
+      padding: 15px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .btn-primary {
+      background: #f39c12;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: #e67e22;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #3498db;
+      color: #fff;
+      margin-top: 15px;
+    }
+    
+    .btn-secondary:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+    
+    .info {
+      margin-top: 15px;
+      padding: 20px;
+      background: #e8f6ef;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #27ae60;
+      border: 1px solid #a3e4bc;
+    }
+    
+    .error {
+      background: #fdedec;
+      color: #e74c3c;
+      border: 1px solid #f5b7b1;
+    }
+    
     .notification {
       font-size: 14px;
-      padding: 10px;
+      padding: 15px;
       background: #fdf5e6;
       border-left: 4px solid #f39c12;
-      margin: 8px 0;
+      margin: 15px 0;
       border-radius: 6px;
+    }
+    
+    .progress-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .progress-bar::before {
+      content: "";
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: #ecf0f1;
+      z-index: 1;
+    }
+    
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .step-number {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ecf0f1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #7f8c8d;
+    }
+    
+    .step-number.active {
+      background: #3498db;
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 12px;
+      color: #7f8c8d;
+      text-align: center;
+    }
+    
+    .step-label.active {
+      color: #3498db;
+      font-weight: 500;
+    }
+    
+    /* Footer */
+    footer { 
+      background: #2c3e50; 
+      color: #fff; 
+      padding: 30px 20px 20px; 
+      text-align: center;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+    
+    .social-links a:hover {
+      background: #f39c12;
+    }
+    
+    .copyright {
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: #ddd;
+      font-size: 0.9em;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      header {
+        flex-wrap: wrap;
+      }
+      
+      .mobile-menu {
+        display: block;
+      }
+      
+      nav {
+        width: 100%;
+        margin-top: 15px;
+        display: none;
+      }
+      
+      nav.active {
+        display: block;
+      }
+      
+      nav ul {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .application-header h2 {
+        font-size: 1.6em;
+      }
+      
+      .application-body {
+        padding: 20px;
+      }
+      
+      .progress-bar {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      
+      .progress-bar::before {
+        display: none;
+      }
+      
+      .progress-step {
+        flex-direction: row;
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Apply for a Loan</h1>
+    <div class="logo-container">
+      <img src="https://i.ibb.co/Swt9FdwS/file-00000000ce2461fd8c9c3cff74e4737d-1.png" alt="QuickLoan Icon">
+      <h1>QuickLoan</h1>
+    </div>
+    
+    <div class="mobile-menu">
+      <i class="fas fa-bars"></i>
+    </div>
+    
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="eligibility.html">Eligibility</a></li>
+        <li><a href="apply.html" class="active">Apply Now</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
   </header>
 
-  <div class="container">
-    <h2>Loan Application Form</h2>
-    <div class="info" id="eligibilityInfo">Loading your eligibility...</div>
+  <main>
+    <div class="container">
+      <div class="application-header">
+        <h2>Apply for a QuickLoan</h2>
+        <p>Complete your application in just a few minutes</p>
+      </div>
+      
+      <div class="application-body">
+        <div class="progress-bar">
+          <div class="progress-step">
+            <div class="step-number active">1</div>
+            <div class="step-label active">Application</div>
+          </div>
+          <div class="progress-step">
+            <div class="step-number">2</div>
+            <div class="step-label">Review</div>
+          </div>
+          <div class="progress-step">
+            <div class="step-number">3</div>
+            <div class="step-label">Approval</div>
+          </div>
+        </div>
+        
+        <div class="info" id="eligibilityInfo">
+          <i class="fas fa-info-circle"></i> Loading your eligibility information...
+        </div>
+        
+        <div class="notification">
+          <i class="fas fa-clock"></i> Your application will be processed within 24 hours
+        </div>
 
-    <form id="loanForm">
-      <label for="amount">Loan Amount (Ksh)</label>
-      <input type="number" id="amount" required>
+        <form id="loanForm">
+          <div class="form-group">
+            <label for="amount">Loan Amount (Ksh)</label>
+            <div class="input-with-icon">
+              <i class="fas fa-money-bill-wave"></i>
+              <input type="number" id="amount" placeholder="Enter desired loan amount" required>
+            </div>
+            <small style="color: #7f8c8d; margin-top: 5px; display: block;">
+              Minimum: Ksh 1,000 | Maximum: Based on your eligibility
+            </small>
+          </div>
 
-      <label for="purpose">Purpose of Loan</label>
-      <textarea id="purpose" rows="3" required></textarea>
+          <div class="form-group">
+            <label for="purpose">Purpose of Loan</label>
+            <div class="input-with-icon">
+              <i class="fas fa-edit"></i>
+              <textarea id="purpose" placeholder="Briefly describe what you need the loan for" required></textarea>
+            </div>
+          </div>
 
-      <label for="term">Loan Term</label>
-      <select id="term" required>
-        <option value="">--Select Term--</option>
-        <option value="3">3 months</option>
-        <option value="6">6 months</option>
-        <option value="12">12 months</option>
-      </select>
+          <div class="form-group">
+            <label for="term">Loan Term</label>
+            <div class="input-with-icon">
+              <i class="fas fa-calendar-alt"></i>
+              <select id="term" required>
+                <option value="">--Select Repayment Period--</option>
+                <option value="3">3 months</option>
+                <option value="6">6 months</option>
+                <option value="12">12 months</option>
+              </select>
+            </div>
+          </div>
 
-      <label for="employment">Employment Status</label>
-      <select id="employment" required>
-        <option value="">--Select Status--</option>
-        <option value="employed">Employed</option>
-        <option value="self-employed">Self-Employed</option>
-        <option value="unemployed">Unemployed</option>
-      </select>
+          <div class="form-group">
+            <label for="employment">Employment Status</label>
+            <div class="input-with-icon">
+              <i class="fas fa-briefcase"></i>
+              <select id="employment" required>
+                <option value="">--Select Your Employment Status--</option>
+                <option value="employed">Employed</option>
+                <option value="self-employed">Self-Employed</option>
+                <option value="unemployed">Unemployed</option>
+                <option value="student">Student</option>
+                <option value="retired">Retired</option>
+              </select>
+            </div>
+          </div>
 
-      <button type="submit">Submit Application</button>
-    </form>
-  </div>
+          <div class="form-group">
+            <label for="mpesa">M-Pesa Number</label>
+            <div class="input-with-icon">
+              <i class="fas fa-mobile-alt"></i>
+              <input type="tel" id="mpesa" placeholder="e.g. 0712345678" required>
+            </div>
+            <small style="color: #7f8c8d; margin-top: 5px; display: block;">
+              Funds will be sent to this M-Pesa number if approved
+            </small>
+          </div>
 
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Submit Application
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <p>Contact us: <a href="mailto:support@quickloan.co.ke" style="color:#f39c12;">support@quickloan.co.ke</a> | Phone: +254 700 000 000</p>
+      
+      <div class="social-links">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+      
+      <div class="copyright">
+        <p>&copy; 2025 QuickLoan. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  
   <script>
     // Firebase config
     const firebaseConfig = {
@@ -123,22 +540,35 @@
       appId: "1:880950005868:web:296a55912477a4b4a44849"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     // Load eligibility from localStorage
-    let eligibility = JSON.parse(localStorage.getItem("loanEligibility"));
-    let maxLoan = 0;
-    if (eligibility && eligibility.loanLimit) {
-      maxLoan = eligibility.loanLimit;
-      document.getElementById("eligibilityInfo").textContent =
-        `✅ Based on your income, your maximum loan eligibility is Ksh ${maxLoan.toLocaleString()}.`;
-    } else {
-      document.getElementById("eligibilityInfo").textContent =
-        "❌ Eligibility not found. Please go back and check your loan limit.";
-      document.getElementById("loanForm").style.display = "none";
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      let eligibility = JSON.parse(localStorage.getItem("loanEligibility"));
+      let maxLoan = 0;
+      
+      if (eligibility && eligibility.loanLimit) {
+        maxLoan = eligibility.loanLimit;
+        document.getElementById("eligibilityInfo").innerHTML = 
+          `<i class="fas fa-check-circle"></i> Based on your eligibility, you can borrow up to <strong>Ksh ${maxLoan.toLocaleString()}</strong>`;
+        
+        // Set max attribute on amount input
+        document.getElementById("amount").setAttribute("max", maxLoan);
+        
+        // Pre-fill M-Pesa number if available
+        if (eligibility.phone) {
+          document.getElementById("mpesa").value = eligibility.phone;
+        }
+      } else {
+        document.getElementById("eligibilityInfo").innerHTML = 
+          `<i class="fas fa-exclamation-triangle"></i> Eligibility not found. Please <a href="eligibility.html" style="color: #e74c3c;">check your loan limit</a> first.`;
+        document.getElementById("loanForm").style.display = "none";
+      }
+    });
 
+    // Form submission handler
     document.getElementById("loanForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -146,34 +576,69 @@
       const purpose = document.getElementById("purpose").value;
       const term = document.getElementById("term").value;
       const employment = document.getElementById("employment").value;
+      const mpesa = document.getElementById("mpesa").value;
 
+      // Get eligibility data
+      let eligibility = JSON.parse(localStorage.getItem("loanEligibility"));
+      let maxLoan = eligibility ? eligibility.loanLimit : 0;
+
+      // Validation
       if (amount > maxLoan) {
         alert(`❌ You cannot apply for more than your eligibility limit of Ksh ${maxLoan.toLocaleString()}.`);
         return;
       }
+      
+      if (amount < 1000) {
+        alert("❌ Minimum loan amount is Ksh 1,000.");
+        return;
+      }
+      
+      if (!mpesa.match(/^07\d{8}$/)) {
+        alert("❌ Please enter a valid M-Pesa number (e.g., 07XXXXXXXX).");
+        return;
+      }
 
       try {
+        // Show loading state
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+
+        // Submit to Firestore
         await db.collection("loanApplications").add({
           idNumber: eligibility.idNumber,
           phone: eligibility.phone,
-          amount,
-          purpose,
-          term,
-          employment,
+          mpesa: mpesa,
+          amount: amount,
+          purpose: purpose,
+          term: term,
+          employment: employment,
           status: "Pending",
           createdAt: new Date()
         });
 
         // Store success message for notification page
-        localStorage.setItem("loanSuccessMessage", "✅ Your loan application was submitted successfully!");
+        localStorage.setItem("loanSuccessMessage", 
+          `✅ Your loan application for Ksh ${amount.toLocaleString()} was submitted successfully!`);
 
         // Redirect to notifications page
-        window.location.href = "pay.html";
+        window.location.href = "notification.html";
 
       } catch (error) {
         console.error("Error adding document: ", error);
-        alert("❌ Failed to submit loan application. Please try again.");
+        alert("❌ Failed to submit loan application. Please check your connection and try again.");
+        
+        // Reset button state
+        const submitBtn = document.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }
+    });
+
+    // Mobile menu toggle
+    document.querySelector(".mobile-menu").addEventListener("click", () => {
+      document.querySelector("nav").classList.toggle("active");
     });
   </script>
 </body>
