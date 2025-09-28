@@ -3,114 +3,476 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loan Eligibility Calculator</title>
+  <title>QuickLoan Eligibility Calculator</title>
+  
+  <!-- Essential Meta Tags for Social Media Sharing -->
+  <meta property="og:title" content="QuickLoan - Check Your Loan Eligibility">
+  <meta property="og:description" content="Find out how much you can borrow with QuickLoan's eligibility calculator. Fast approval, no CRB checks.">
+  <meta property="og:image" content="https://i.ibb.co/DQq1B8f/quickloan-icon.png">
+  <meta property="og:url" content="https://yourwebsite.com/eligibility">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QuickLoan - Check Your Loan Eligibility">
+  <meta name="twitter:description" content="Find out how much you can borrow with QuickLoan's eligibility calculator.">
+  <meta name="twitter:image" content="https://i.ibb.co/DQq1B8f/quickloan-icon.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="https://i.ibb.co/DQq1B8f/quickloan-icon.png">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 0;
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
     }
-    header {
-      background: #2c3e50;
-      color: #fff;
-      padding: 15px;
-      text-align: center;
+    
+    body { 
+      font-family: 'Roboto', sans-serif; 
+      background: linear-gradient(135deg, #f4f6f9 0%, #e3e8f0 100%);
+      color: #333; 
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Header Styles */
+    header { 
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: #fff; 
+      padding: 15px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    header img { 
+      width: 45px; 
+      height: 45px; 
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    header h1 { 
+      font-size: 1.8em; 
+      margin: 0; 
+      font-weight: 700;
+    }
+    
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 20px;
+    }
+    
+    nav a {
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background 0.3s;
+      color: white;
+    }
+    
+    nav a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .mobile-menu {
+      display: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    /* Main Content */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
     .container {
-      max-width: 500px;
-      margin: 40px auto;
+      width: 100%;
+      max-width: 600px;
       background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
     }
-    h2 {
+    
+    .calculator-header {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 25px 30px;
       text-align: center;
-      color: #333;
     }
+    
+    .calculator-header h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .calculator-header p {
+      opacity: 0.9;
+      font-size: 1em;
+    }
+    
+    .calculator-body {
+      padding: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      box-sizing: border-box;
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background: #2980b9;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #216f9b;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 15px;
-      background: #ecf0f1;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      font-weight: 500;
       color: #2c3e50;
     }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7f8c8d;
+    }
+    
+    input {
+      width: 100%;
+      padding: 14px 15px 14px 45px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .btn {
+      padding: 15px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .btn-primary {
+      background: #f39c12;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: #e67e22;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(243, 156, 18, 0.4);
+    }
+    
+    .btn-secondary {
+      background: #3498db;
+      color: #fff;
+      margin-top: 15px;
+    }
+    
+    .btn-secondary:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+    
+    .result {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 500;
+      display: none;
+    }
+    
+    .success {
+      background: #e8f6ef;
+      color: #27ae60;
+      border: 1px solid #a3e4bc;
+    }
+    
+    .error {
+      background: #fdedec;
+      color: #e74c3c;
+      border: 1px solid #f5b7b1;
+    }
+    
     .proceed-btn {
       display: none;
-      margin-top: 15px;
-      padding: 12px;
-      width: 100%;
-      background: #27ae60;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s ease;
+      margin-top: 20px;
     }
-    .proceed-btn:hover {
-      background: #1e8449;
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+      width: 100%;
+      max-width: 1000px;
+    }
+    
+    .feature {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      color: white;
+      font-size: 1.5rem;
+    }
+    
+    .feature h3 {
+      margin-bottom: 10px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+    
+    .feature p {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    /* Footer */
+    footer { 
+      background: #2c3e50; 
+      color: #fff; 
+      padding: 30px 20px 20px; 
+      text-align: center;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+    
+    .social-links a:hover {
+      background: #f39c12;
+    }
+    
+    .copyright {
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: #ddd;
+      font-size: 0.9em;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      header {
+        flex-wrap: wrap;
+      }
+      
+      .mobile-menu {
+        display: block;
+      }
+      
+      nav {
+        width: 100%;
+        margin-top: 15px;
+        display: none;
+      }
+      
+      nav.active {
+        display: block;
+      }
+      
+      nav ul {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .calculator-header h2 {
+        font-size: 1.6em;
+      }
+      
+      .calculator-body {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Loan Eligibility Calculator</h1>
+    <div class="logo-container">
+      <img src="https://i.ibb.co/Swt9FdwS/file-00000000ce2461fd8c9c3cff74e4737d-1.png" alt="QuickLoan Icon">
+      <h1>QuickLoan</h1>
+    </div>
+    
+    <div class="mobile-menu">
+      <i class="fas fa-bars"></i>
+    </div>
+    
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="eligibility.html" class="active">Eligibility</a></li>
+        <li><a href="apply.html">Apply Now</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
   </header>
 
-  <div class="container">
-    <h2>Check Your Loan Limit</h2>
-    <form id="calcForm">
-      <label for="idNumber">National ID Number</label>
-      <input type="text" id="idNumber" required>
+  <main>
+    <div class="container">
+      <div class="calculator-header">
+        <h2>QuickLoan Eligibility Calculator</h2>
+        <p>Find out how much you can borrow in just 60 seconds</p>
+      </div>
+      
+      <div class="calculator-body">
+        <form id="calcForm">
+          <div class="form-group">
+            <label for="idNumber">National ID Number</label>
+            <div class="input-with-icon">
+              <i class="fas fa-id-card"></i>
+              <input type="text" id="idNumber" placeholder="Enter your ID number" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Active Mobile Number</label>
+            <div class="input-with-icon">
+              <i class="fas fa-mobile-alt"></i>
+              <input type="tel" id="phone" placeholder="e.g. 0712345678" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="income">Monthly Income (Ksh)</label>
+            <div class="input-with-icon">
+              <i class="fas fa-money-bill-wave"></i>
+              <input type="number" id="income" placeholder="Enter your monthly income" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="expenses">Monthly Expenses (Ksh)</label>
+            <div class="input-with-icon">
+              <i class="fas fa-chart-line"></i>
+              <input type="number" id="expenses" placeholder="Enter your monthly expenses" required>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-calculator"></i> Check My Eligibility
+          </button>
+        </form>
+        
+        <div class="result" id="result"></div>
+        
+        <button class="btn btn-secondary proceed-btn" id="proceedBtn" onclick="goToApplication()">
+          <i class="fas fa-arrow-right"></i> Proceed to Loan Application
+        </button>
+      </div>
+    </div>
+    
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <h3>No CRB Check</h3>
+        <p>Your credit history doesn't affect your eligibility. We believe in second chances.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <h3>Instant Approval</h3>
+        <p>Get an instant decision on your loan application in minutes, not days.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <i class="fas fa-hand-holding-usd"></i>
+        </div>
+        <h3>Flexible Repayment</h3>
+        <p>Choose a repayment plan that works for your budget and financial situation.</p>
+      </div>
+    </div>
+  </main>
 
-      <label for="phone">Active Mobile Number</label>
-      <input type="tel" id="phone" required placeholder="e.g. 0712345678">
-
-      <label for="income">Monthly Income (Ksh)</label>
-      <input type="number" id="income" required>
-
-      <label for="expenses">Monthly Expenses (Ksh)</label>
-      <input type="number" id="expenses" required>
-
-      <button type="submit">Calculate Loan Limit</button>
-    </form>
-
-    <div class="result" id="result"></div>
-    <button class="proceed-btn" id="proceedBtn" onclick="goToApplication()">Proceed to Loan Application</button>
-  </div>
+  <footer>
+    <div class="footer-content">
+      <p>Contact us: <a href="mailto:support@quickloan.co.ke" style="color:#f39c12;">support@quickloan.co.ke</a> | Phone: +254 700 000 000</p>
+      
+      <div class="social-links">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+      
+      <div class="copyright">
+        <p>&copy; 2025 QuickLoan. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const calcForm = document.getElementById("calcForm");
@@ -125,35 +487,74 @@
       const income = parseFloat(document.getElementById("income").value);
       const expenses = parseFloat(document.getElementById("expenses").value);
 
+      // Input validation
       if (idNumber.length < 6) {
-        alert("Please enter a valid ID Number.");
+        showResult("Please enter a valid ID Number.", "error");
         return;
       }
+      
       if (!phone.match(/^07\d{8}$/)) {
-        alert("Please enter a valid mobile number (e.g., 07XXXXXXXX).");
+        showResult("Please enter a valid mobile number (e.g., 07XXXXXXXX).", "error");
+        return;
+      }
+      
+      if (income < 5000) {
+        showResult("Monthly income must be at least Ksh 5,000 to qualify.", "error");
+        return;
+      }
+      
+      if (expenses < 0) {
+        showResult("Please enter valid expense amount.", "error");
         return;
       }
 
+      // Calculate loan eligibility
       const disposableIncome = income - expenses;
       let loanLimit = 0;
 
       if (disposableIncome > 0) {
-        loanLimit = disposableIncome * 3;
+        // Loan limit is 3 times disposable income, capped at 20,000
+        loanLimit = Math.min(disposableIncome * 3, 20000);
+        
+        // Ensure minimum loan amount
+        if (loanLimit < 1000) {
+          loanLimit = 0;
+        }
       }
 
+      // Display result
       if (loanLimit > 0) {
-        resultDiv.textContent = `✅ Congratulations! You qualify for a loan up to Ksh ${loanLimit.toLocaleString()}.`;
-        proceedBtn.style.display = "block";
-        localStorage.setItem("loanEligibility", JSON.stringify({ idNumber, phone, loanLimit }));
+        showResult(`Congratulations! You qualify for a loan up to <strong>Ksh ${loanLimit.toLocaleString()}</strong>.`, "success");
+        proceedBtn.style.display = "flex";
+        localStorage.setItem("loanEligibility", JSON.stringify({ 
+          idNumber, 
+          phone, 
+          loanLimit,
+          calculated: new Date().toISOString()
+        }));
       } else {
-        resultDiv.textContent = "❌ Sorry, your expenses exceed income. You do not qualify for a loan.";
+        showResult("Sorry, based on your income and expenses, you do not currently qualify for a loan. Please try again when your financial situation improves.", "error");
         proceedBtn.style.display = "none";
       }
     });
 
-    function goToApplication() {
-      window.location.href = "pay.html"; // link to your loan application page
+    function showResult(message, type) {
+      resultDiv.innerHTML = message;
+      resultDiv.className = `result ${type}`;
+      resultDiv.style.display = "block";
+      
+      // Scroll to result
+      resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    function goToApplication() {
+      window.location.href = "apply.html"; // link to your loan application page
+    }
+
+    // Mobile menu toggle
+    document.querySelector(".mobile-menu").addEventListener("click", () => {
+      document.querySelector("nav").classList.toggle("active");
+    });
   </script>
 </body>
 </html>

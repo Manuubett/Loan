@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odds Analyzer Pro - Football Prediction System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #3b82f6;
+            --accent-dark: #2563eb;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+            --chart-gradient-start: rgba(59, 130, 246, 0.4);
+            --chart-gradient-end: rgba(59, 130, 246, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, #0c1a32 100%);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+
+        body.light-mode {
+            --primary: #f1f5f9;
+            --secondary: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.light-mode header {
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.15);
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--secondary);
+            padding: 8px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--secondary);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .card {
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--info));
+            border-radius: 16px 16px 0 0;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .card-title i {
+            font-size: 1.6rem;
+            width: 40px;
+            height: 40px;
+            background: rgba(59, 130, 246, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label i {
+            font-size: 0.9rem;
+        }
+
+        input {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.07);
+            color: var(--text);
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        body.light-mode input {
+            background: rgba(0,0,0,0.03);
+            color: var(--text);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: var(--accent);
+        }
+
+        body.light-mode input:focus {
+            background: rgba(0,0,0,0.05);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            border: none;
+            padding: 16px 25px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            opacity: 0.95;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button i {
+            font-size: 1.2rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        body.light-mode .stat-card {
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 5px 0;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px 20px;
+            background: rgba(0,0,0,0.2);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        body.light-mode th {
+            background: rgba(0,0,0,0.03);
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        body.light-mode td {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255,255,255,0.03);
+        }
+
+        body.light-mode tr:nth-child(even) {
+            background: rgba(0,0,0,0.02);
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.08) !important;
+        }
+
+        .win-outcome {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .draw-outcome {
+            color: var(--warning);
+            font-weight: 700;
+        }
+
+        .loss-outcome {
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        /* Charts */
+        .chart-container {
+            height: 300px;
+            margin-top: 10px;
+        }
+
+        .prediction-card {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .prediction-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 0 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.light-mode .footer {
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        /* Outcome indicators */
+        .outcome-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .outcome-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 20px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.15);
+            min-width: 100px;
+        }
+
+        .outcome-box.home {
+            border-top: 4px solid var(--success);
+        }
+
+        .outcome-box.draw {
+            border-top: 4px solid var(--warning);
+        }
+
+        .outcome-box.away {
+            border-top: 4px solid var(--danger);
+        }
+
+        .outcome-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 5px 0;
+        }
+
+        /* Progress bars */
+        .progress-container {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .progress-home {
+            background: var(--success);
+        }
+
+        .progress-draw {
+            background: var(--warning);
+        }
+
+        .progress-away {
+            background: var(--danger);
+        }
+
+        /* Recommendation badge */
+        .recommendation-badge {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 5px 0 15px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Loading animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* New styles */
+        .risk-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .risk-level {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .risk-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .risk-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .risk-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .confidence-meter {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--accent), var(--info));
+        }
+        
+        .probability-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .probability-card {
+            background: rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .probability-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 5px 0;
+        }
+        
+        .probability-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .trend-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .trend-up {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .trend-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        #toggleSettings {
+            margin-top: 20px;
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+        
+        #toggleSettings:hover {
+            background: var(--accent-dark);
+        }
+        
+        .settings-panel {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background: var(--secondary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .threshold-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .threshold-label {
+            flex: 1;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+        
+        .threshold-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .threshold-value {
+            width: 50px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: rgba(255,255,255,0.07);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        
+        .threshold-btn {
+            padding: 5px 12px;
+            font-size: 1rem;
+            border: none;
+            background: var(--accent);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .threshold-btn:hover {
+            background: var(--accent-dark);
+        }
+        
+        .info-note {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--info);
+        }
+        
+        .warning-note {
+            font-size: 0.85rem;
+            color: var(--warning);
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--warning);
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .preset-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.95rem;
+            background: var(--secondary);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .preset-buttons button:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .preset-buttons button.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .profile-popup {
+            position: fixed;
+            top: 80px;
+            right: 70px;
+            background: var(--secondary);
+            color: var(--text);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            font-size: 14px;
+            line-height: 1.4;
+            z-index: 9999;
+            max-width: 300px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .profile-popup .popup-content i {
+            margin-right: 6px;
+            color: var(--warning);
+        }
+        
+        .auto-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .auto-toggle-label {
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <div class="logo-text">Odds Analyzer Pro</div>
+            </div>
+            <div class="theme-toggle" id="themeToggleContainer">
+                <i class="fas fa-moon"></i>
+                <label class="switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider"></span>
+                </label>
+                <i class="fas fa-sun"></i>
+            </div>
+        </header>
+        <div style="font-size: 0.9rem; color: yellow;">
+  Subscription ends in <span id="timer">--:--:--</span>
+</div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label"><i class="fas fa-database"></i> Records Queried</div>
+                <div class="stat-value" id="recordsQueried">0</div>
+                <div class="stat-desc">Last Query</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label"><i class="fas fa-clock"></i> Response Time</div>
+                <div class="stat-value" id="responseTime">0</div>
+                <div class="stat-desc">milliseconds</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label"><i class="fas fa-microchip"></i> Data Processed</div>
+                <div class="stat-value" id="dataProcessed">0</div>
+                <div class="stat-desc">Records</div>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-search"></i> Analyze Odds</h2>
+                <div class="input-group">
+                    <div class="input-container">
+                        <label for="matchName"><i class="fas fa-trophy"></i> Match Name</label>
+                        <input type="text" id="matchName" placeholder="e.g. Real Madrid vs Barcelona">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-container">
+                        <label for="homeOdds"><i class="fas fa-home"></i> Home Win Odds</label>
+                        <input type="number" step="0.01" id="homeOdds" placeholder="e.g. 2.50">
+                    </div>
+                    <div class="input-container">
+                        <label for="drawOdds"><i class="fas fa-equals"></i> Draw Odds</label>
+                        <input type="number" step="0.01" id="drawOdds" placeholder="e.g. 3.20">
+                    </div>
+                    <div class="input-container">
+                        <label for="awayOdds"><i class="fas fa-plane-departure"></i> Away Win Odds</label>
+                        <input type="number" step="0.01" id="awayOdds" placeholder="e.g. 2.80">
+                    </div>
+                </div>
+                <button id="analyzeOddsBtn">
+                    <i class="fas fa-chart-line"></i> Analyze Odds
+                </button>
+                
+                <div class="preset-buttons">
+                    <button onclick="applyPreset('safe')">✅ Safe</button>
+                    <button onclick="applyPreset('balanced')">⚖️ Balanced</button>
+                    <button onclick="applyPreset('aggressive')">🔥 Aggressive</button>
+                </div>
+                
+                <div class="auto-toggle-container">
+                    <label class="auto-toggle-label">
+                        <input type="checkbox" id="autoPredictToggle" checked>
+                        Auto Predict Mode
+                    </label>
+                </div>
+                
+                <div id="toggleSettings">⚙️ Prediction Settings</div>
+                
+                <div class="settings-panel" id="settingsPanel" style="display: none;">
+                    <div class="threshold-group">
+                        <span class="threshold-label">Home Win Threshold (%)</span>
+                        <div class="threshold-controls">
+                            <button class="threshold-btn" onclick="adjustThreshold('homeThreshold', -10)">−</button>
+                            <div id="homeThreshold" class="threshold-value">60</div>
+                            <button class="threshold-btn" onclick="adjustThreshold('homeThreshold', 10)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <span class="threshold-label">Draw Threshold (%)</span>
+                        <div class="threshold-controls">
+                            <button class="threshold-btn" onclick="adjustThreshold('drawThreshold', -10)">−</button>
+                            <div id="drawThreshold" class="threshold-value">40</div>
+                            <button class="threshold-btn" onclick="adjustThreshold('drawThreshold', 10)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <span class="threshold-label">Away Win Threshold (%)</span>
+                        <div class="threshold-controls">
+                            <button class="threshold-btn" onclick="adjustThreshold('awayThreshold', -10)">−</button>
+                            <div id="awayThreshold" class="threshold-value">60</div>
+                            <button class="threshold-btn" onclick="adjustThreshold('awayThreshold', 10)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <span class="threshold-label">BTTS (GG) Threshold (%)</span>
+                        <div class="threshold-controls">
+                            <button class="threshold-btn" onclick="adjustThreshold('bttsThreshold', -10)">−</button>
+                            <div id="bttsThreshold" class="threshold-value">70</div>
+                            <button class="threshold-btn" onclick="adjustThreshold('bttsThreshold', 10)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="threshold-group">
+                        <span class="threshold-label">Over 2.5 Goals Threshold (%)</span>
+                        <div class="threshold-controls">
+                            <button class="threshold-btn" onclick="adjustThreshold('over25Threshold', -10)">−</button>
+                            <div id="over25Threshold" class="threshold-value">70</div>
+                            <button class="threshold-btn" onclick="adjustThreshold('over25Threshold', 10)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="info-note">
+                        <i class="fas fa-info-circle"></i> Use the + / − buttons to fine-tune prediction sensitivity.
+                        Lower thresholds = more aggressive picks. Higher = more conservative.
+                    </div>
+                </div>
+                
+                <div class="warning-note">
+                    ⚠️ Thresholds are influenced by your market. Always check real market trends before tuning or placing bets to reduce risk.
+                </div>
+                
+                <div class="info-note" id="autoModeNote" style="display: none;">
+                    <i class="fas fa-robot"></i> Auto Predict Mode is ON — thresholds adjust based on market trends.
+                </div>
+            </div>         
+            
+            <div class="card prediction-card">
+                <h2 class="card-title"><i class="fas fa-lightbulb"></i> Prediction Result</h2>
+                
+                <div class="prediction-content" id="predictionResult">
+                    <i class="fas fa-analytics" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
+                    <h3 style="font-weight: 500; color: var(--text-secondary);">Odds Analysis</h3>
+                    <p style="margin-top: 10px; color: var(--text-secondary);">Enter match odds and click "Analyze Odds" to get prediction insights</p>
+                </div>
+                
+                <div id="customStatsResult" style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.1); border-radius: 10px;"></div>
+                
+                <div id="systemPredictionBox" style="margin-top: 20px;"></div>
+                
+                <div id="csSuggestionBox" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-history"></i> Recent Matches</h2>
+            <div style="overflow-x: auto;">
+                <table id="matchTable">
+                    <thead>
+                        <tr>
+                            <th>Match</th>
+                            <th>Result</th>
+                            <th>Outcome</th>
+                            <th>Odds</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading match data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-chart-line"></i> Performance Metrics</h2>
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Odds Analyzer Pro v3.0 | Advanced Football Prediction System | Data provided by Firebase</p>
+            <p>© 2025 Football Analytics Inc. | All predictions are based on historical data analysis</p>
+        </div>
+    </div>
+    
+    <div id="profileReminder" class="profile-popup hidden">
+        <div class="popup-content"></div>
+    </div>
+    <script>
+  const timerDisplay = document.getElementById("timer");
+  const endTime = parseInt(localStorage.getItem("countdown_end_time"));
+
+  if (!endTime || isNaN(endTime)) {
+    window.location.href = "home 2.html";
+  }
+
+  function updateCountdown() {
+    const now = Date.now();
+    const remaining = endTime - now;
+
+    if (remaining <= 0) {
+      timerDisplay.textContent = "Expired";
+      localStorage.removeItem("countdown_end_time");
+      timerDisplay.style.background = "#333";
+      timerDisplay.style.color = "#ff4444";
+      timerDisplay.style.fontSize = "2.5rem";
+
+      setTimeout(() => {
+        window.location.href = "home 2.html";
+      }, 2000);
+    } else {
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+      timerDisplay.textContent = `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      requestAnimationFrame(updateCountdown);
+    }
+  }
+
+  updateCountdown();
+</script>
+ 
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDthFB2btT_r6slyX_xa5jeDOX8KDxsmdo",
+            authDomain: "store-1d9e8.firebaseapp.com",
+            projectId: "store-1d9e8",
+            storageBucket: "store-1d9e8.appspot.com",
+            messagingSenderId: "869478006120",
+            appId: "1:869478006120:web:2045cbb98db8a3755e6add",
+            measurementId: "G-3GCBWGCYPG"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // DOM Elements
+        const matchTable = document.getElementById('matchTable').getElementsByTagName('tbody')[0];
+        const analyzeOddsBtn = document.getElementById('analyzeOddsBtn');
+        const predictionResult = document.getElementById('predictionResult');
+        const homeOddsInput = document.getElementById('homeOdds');
+        const drawOddsInput = document.getElementById('drawOdds');
+        const awayOddsInput = document.getElementById('awayOdds');
+        const matchNameInput = document.getElementById('matchName');
+        const recordsQueriedEl = document.getElementById('recordsQueried');
+        const responseTimeEl = document.getElementById('responseTime');
+        const dataProcessedEl = document.getElementById('dataProcessed');
+
+        // Initialize Chart.js
+        let performanceChart;
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+
+        // Format match outcome
+        function formatOutcome(outcome) {
+            if (outcome === '1') return '<span class="win-outcome">Home Win</span>';
+            if (outcome === 'X') return '<span class="draw-outcome">Draw</span>';
+            if (outcome === '2') return '<span class="loss-outcome">Away Win</span>';
+            return outcome;
+        }
+
+        // Format odds
+        function formatOdds(odds1, oddsX, odds2) {
+            return `1 @ ${odds1.toFixed(2)}, X @ ${oddsX.toFixed(2)}, 2 @ ${odds2.toFixed(2)}`;
+        }
+
+        // Format date
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        // Load recent matches
+        async function loadRecentMatches() {
+            try {
+                const startTime = Date.now();
+                const querySnapshot = await db.collection("matches")
+                    .orderBy("timestamp", "desc")
+                    .limit(10)
+                    .get();
+                
+                const duration = Date.now() - startTime;
+                responseTimeEl.textContent = duration;
+                recordsQueriedEl.textContent = querySnapshot.size;
+                dataProcessedEl.textContent = querySnapshot.size;
+                
+                matchTable.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    matchTable.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px;">
+                                <i class="fas fa-info-circle"></i> No recent matches found
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const row = matchTable.insertRow();
+                    row.innerHTML = `
+                        <td>${data.match || 'Unknown Match'}</td>
+                        <td>${data.result || 'N/A'}</td>
+                        <td>${formatOutcome(data.outcome || '')}</td>
+                        <td>${formatOdds(data.odds1 || 0, data.oddsX || 0, data.odds2 || 0)}</td>
+                        <td>${formatDate(data.timestamp)}</td>
+                    `;
+                });
+                
+                // Initialize performance chart
+                initPerformanceChart();
+                
+            } catch (error) {
+                console.error("Error loading data:", error);
+                matchTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px; color: var(--danger);">
+                            <i class="fas fa-exclamation-triangle"></i> Error loading data: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Initialize performance chart
+        function initPerformanceChart() {
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.1)');
+            
+            // Sample data for the chart
+            const data = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [{
+                    label: 'Prediction Accuracy',
+                    data: [82, 88, 79, 92, 86, 94, 91],
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(255, 255, 255, 1)',
+                    pointBorderColor: 'rgba(59, 130, 246, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.3
+                }, {
+                    label: 'Profit Margin',
+                    data: [5.2, 7.8, 3.1, 9.5, 6.2, 11.3, 8.7],
+                    fill: true,
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(255, 255, 255, 1)',
+                    pointBorderColor: 'rgba(16, 185, 129, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.3
+                }]
+            };
+            
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    if (label) {
+                                        return `${label}: ${context.parsed.y}%`;
+                                    }
+                                    return context.parsed.y;
+                                }
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: 'var(--text-secondary)',
+                                font: {
+                                    size: 13
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0,
+                            max: 120,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Analyze odds
+        async function analyzeOdds() {
+            const homeOdds = parseFloat(homeOddsInput.value);
+            const drawOdds = parseFloat(drawOddsInput.value);
+            const awayOdds = parseFloat(awayOddsInput.value);
+            const matchName = matchNameInput.value || "Current Match";
+
+            // Validate inputs
+            if (!homeOdds || !drawOdds || !awayOdds || 
+                homeOdds < 1.01 || drawOdds < 1.01 || awayOdds < 1.01) {
+                predictionResult.innerHTML = `
+                    <p style="color: var(--danger);">
+                        <i class="fas fa-exclamation-circle"></i> Please enter valid odds (greater than 1.00)
+                    </p>
+                `;
+                return;
+            }
+
+            predictionResult.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="pulse" style="font-size: 3rem; margin: 10px 0;">
+                        <i class="fas fa-cog fa-spin"></i>
+                    </div>
+                    <p>Analyzing odds patterns...</p>
+                    <p><small>Querying historical database</small></p>
+                </div>
+            `;
+
+            const tolerance = 0.3;
+            const startTime = Date.now();
+
+            try {
+                const [homeSnap, drawSnap, awaySnap] = await Promise.all([
+                    db.collection("matches")
+                        .where("odds1", ">=", homeOdds - tolerance)
+                        .where("odds1", "<=", homeOdds + tolerance)
+                        .get(),
+                    db.collection("matches")
+                        .where("oddsX", ">=", drawOdds - tolerance)
+                        .where("oddsX", "<=", drawOdds + tolerance)
+                        .get(),
+                    db.collection("matches")
+                        .where("odds2", ">=", awayOdds - tolerance)
+                        .where("odds2", "<=", awayOdds + tolerance)
+                        .get()
+                ]);
+
+                const homeIDs = new Set(homeSnap.docs.map(doc => doc.id));
+                const drawIDs = new Set(drawSnap.docs.map(doc => doc.id));
+                const awayIDs = new Set(awaySnap.docs.map(doc => doc.id));
+
+                // Find intersection of all three sets
+                const intersectIDs = [...homeIDs].filter(
+                    id => drawIDs.has(id) && awayIDs.has(id)
+                );
+
+                const docsMap = new Map();
+                for (const doc of [...homeSnap.docs, ...drawSnap.docs, ...awaySnap.docs]) {
+                    if (intersectIDs.includes(doc.id)) {
+                        docsMap.set(doc.id, doc.data());
+                    }
+                }
+
+                const filteredMatches = Array.from(docsMap.values());
+                const duration = Date.now() - startTime;
+
+                // Update stats
+                recordsQueriedEl.textContent = homeSnap.size + drawSnap.size + awaySnap.size;
+                dataProcessedEl.textContent = filteredMatches.length;
+                responseTimeEl.textContent = duration;
+
+                if (filteredMatches.length === 0) {
+                    predictionResult.innerHTML = `
+                        <p style="color: var(--warning);">
+                            <i class="fas fa-exclamation-triangle"></i> No similar matches found. Try different odds.
+                        </p>
+                        <div class="probability-grid">
+                            <div class="probability-card">
+                                <div class="probability-value">${(100/homeOdds).toFixed(1)}%</div>
+                                <div class="probability-label">Home Win</div>
+                            </div>
+                            <div class="probability-card">
+                                <div class="probability-value">${(100/drawOdds).toFixed(1)}%</div>
+                                <div class="probability-label">Draw</div>
+                            </div>
+                            <div class="probability-card">
+                                <div class="probability-value">${(100/awayOdds).toFixed(1)}%</div>
+                                <div class="probability-label">Away Win</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Calculate statistics
+                let homeWins = 0, draws = 0, awayWins = 0;
+                let bttsCount = 0, over25Count = 0;
+                const scores = {};
+
+                filteredMatches.forEach(match => {
+                    const outcome = match.outcome || "";
+                    const [homeScore, awayScore] = (match.result || "-").split("-").map(Number);
+                    
+                    if (!isNaN(homeScore) && !isNaN(awayScore)) {
+                        if (homeScore + awayScore > 2.5) over25Count++;
+                        if (homeScore > 0 && awayScore > 0) bttsCount++;
+                        const score = `${homeScore}-${awayScore}`;
+                        scores[score] = (scores[score] || 0) + 1;
+                    }
+                    
+                    if (outcome === "1") homeWins++;
+                    else if (outcome === "X") draws++;
+                    else if (outcome === "2") awayWins++;
+                });
+
+                const totalMatches = filteredMatches.length;
+                const homeRate = homeWins / totalMatches;
+                const drawRate = draws / totalMatches;
+                const awayRate = awayWins / totalMatches;
+                const bttsRate = bttsCount / totalMatches;
+                const over25Rate = over25Count / totalMatches;
+
+                // Determine prediction
+                
+                
+const isAutoMode = document.getElementById('autoPredictToggle').checked;
+
+let homeThreshold = 0.4, drawThreshold = 0.4, awayThreshold = 0.5, bttsThreshold = 0.6, over25Threshold = 0.6;
+
+if (!isAutoMode) {
+  homeThreshold = parseFloat(document.getElementById('homeThreshold').textContent) / 100;
+  drawThreshold = parseFloat(document.getElementById('drawThreshold').textContent) / 100;
+  awayThreshold = parseFloat(document.getElementById('awayThreshold').textContent) / 100;
+  bttsThreshold = parseFloat(document.getElementById('bttsThreshold').textContent) / 100;
+  over25Threshold = parseFloat(document.getElementById('over25Threshold').textContent) / 100;
+}
+
+
+// Determine prediction using thresholds
+let prediction = "No clear prediction", confidence = 0, riskLevel = "risk-high", trend = "trend-down";
+
+if (homeRate >= homeThreshold) {
+  prediction = "Home Win";
+  confidence = homeRate * 90;
+  riskLevel = homeOdds > 2.0 ? "risk-medium" : "risk-low";
+  trend = homeRate > homeThreshold + 0.05 ? "trend-up" : "trend-down";
+} else if (awayRate >= awayThreshold) {
+  prediction = "Away Win";
+  confidence = awayRate * 90;
+  riskLevel = awayOdds > 2.0 ? "risk-medium" : "risk-low";
+  trend = awayRate > awayThreshold + 0.05 ? "trend-up" : "trend-down";
+} else if (drawRate >= drawThreshold) {
+  prediction = "Draw";
+  confidence = drawRate * 85;
+  riskLevel = "risk-high";
+  trend = drawRate > drawThreshold + 0.05 ? "trend-up" : "trend-down";
+} else if (bttsRate >= bttsThreshold) {
+  prediction = "Both Teams to Score";
+  confidence = bttsRate * 80;
+  riskLevel = "risk-medium";
+} else if (over25Rate >= over25Threshold) {
+  prediction = "Over 2.5 Goals";
+  confidence = over25Rate * 80;
+  riskLevel = "risk-medium";
+} else {
+  // Fallback markets
+  const fallbackOptions = [];
+
+  if (bttsRate > 0.55) fallbackOptions.push({ market: "GG (BTTS)", rate: bttsRate });
+  if (over25Rate > 0.55) fallbackOptions.push({ market: "Over 2.5 Goals", rate: over25Rate });
+  if (homeRate + drawRate > 0.65) fallbackOptions.push({ market: "1X", rate: homeRate + drawRate });
+  if (awayRate + drawRate > 0.65) fallbackOptions.push({ market: "2X", rate: awayRate + drawRate });
+  if (homeRate + awayRate > 0.70) fallbackOptions.push({ market: "12 (No Draw)", rate: homeRate + awayRate });
+
+  if (fallbackOptions.length > 0) {
+    fallbackOptions.sort((a, b) => b.rate - a.rate);
+    prediction = fallbackOptions[0].market;
+    confidence = fallbackOptions[0].rate * 80;
+    riskLevel = "risk-high";
+  } else {
+    prediction = "No clear prediction";
+    confidence = 0;
+    riskLevel = "risk-high";
+  }
+}
+
+                // Format top scores
+                const sortedScores = Object.entries(scores)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+                const scoreList = sortedScores.map(([score, count]) => 
+                    `<div>${score} <span class="trend-badge">${count} matches</span></div>`
+                ).join('');
+
+                // Display results
+                predictionResult.innerHTML = `
+                    <h3 style="margin-bottom: 15px;">
+                        <i class="fas fa-bullseye"></i> Recommended: ${prediction} 
+                        <span class="trend-badge ${trend || 'trend-up'}">${confidence.toFixed(0)}% confidence</span>
+                    </h3>
+                    
+                    <div class="confidence-meter">
+                        <div class="confidence-fill" style="width: ${confidence}%"></div>
+                    </div>
+                    
+                    <div class="risk-indicator">
+                        <span class="risk-level ${riskLevel}">
+                            <i class="fas fa-${riskLevel === 'risk-low' ? 'shield-alt' : 
+                              riskLevel === 'risk-medium' ? 'exclamation-triangle' : 'skull'}"></i>
+                            ${riskLevel.replace('risk-', '').toUpperCase()} RISK
+                        </span>
+                    </div>
+                    
+                    <div class="probability-grid">
+                        <div class="probability-card">
+                            <div class="probability-value">${(homeRate * 100).toFixed(1)}%</div>
+                            <div class="probability-label">Home Win</div>
+                        </div>
+                        <div class="probability-card">
+                            <div class="probability-value">${(drawRate * 100).toFixed(1)}%</div>
+                            <div class="probability-label">Draw</div>
+                        </div>
+                        <div class="probability-card">
+                            <div class="probability-value">${(awayRate * 100).toFixed(1)}%</div>
+                            <div class="probability-label">Away Win</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <p><i class="fas fa-database"></i> Analyzed ${totalMatches} matches in ${duration}ms</p>
+                        <p><i class="fas fa-futbol"></i> GG Rate: ${(bttsRate * 100).toFixed(1)}% | 
+                           <i class="fas fa-chart-line"></i> Over 2.5: ${(over25Rate * 100).toFixed(1)}%</p>
+                        
+                        ${scoreList ? `
+                        <div style="margin-top: 15px;">
+                            <h4><i class="fas fa-star"></i> Most Common Scores</h4>
+                            ${scoreList}
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error("Error analyzing odds:", error);
+                predictionResult.innerHTML = `
+                    <p style="color: var(--danger);">
+                        <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}
+                    </p>
+                    <p>Please try again or check your connection</p>
+                `;
+            }
+            fetchOutcomeStats(homeOdds, drawOdds, awayOdds);
+            // System Prediction Based on Trends and Underdogs
+            setTimeout(() => {
+                const systemBox = document.getElementById("systemPredictionBox");
+                if (!systemBox) return;
+
+                let systemPick = prediction || "Unavailable";
+                let comment = "System agrees with main prediction.";
+
+                if (homeOdds > 2.5 && homeRate > 0.55) {
+                    systemPick = "Home Win (Underdog)";
+                    comment = "Underdog trend detected: Home win looks valuable.";
+                } else if (awayOdds > 2.5 && awayRate > 0.55) {
+                    systemPick = "Away Win (Underdog)";
+                    comment = "Away team underdog shows strong past wins.";
+                } else if (drawRate > 0.3 && (homeRate + awayRate < 0.6)) {
+                    systemPick = "Draw";
+                    comment = "Market split suggests a likely draw.";
+                }
+
+                systemBox.innerHTML = `
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.1); border-left: 5px solid var(--info); border-radius: 8px;">
+                        <h4 style="color: var(--accent);"><i class="fas fa-robot"></i> System Prediction (AI)</h4>
+                        <p><strong>${systemPick}</strong> — ${comment}</p>
+                    </div>
+                `;
+            }, 3000);
+        }
+
+        // Event Listeners
+        analyzeOddsBtn.addEventListener('click', analyzeOdds);
+        
+        // Theme toggle
+        const toggle = document.getElementById('themeToggle');
+        const themeToggleContainer = document.getElementById('themeToggleContainer');
+        
+        themeToggleContainer.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        });
+
+        // Load saved theme on start
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+                toggle.checked = true;
+            }
+            
+            // Load recent matches
+            loadRecentMatches();
+            
+            // Add Enter key support
+            [homeOddsInput, drawOddsInput, awayOddsInput, matchNameInput].forEach(input => {
+                input.addEventListener('keypress', e => {
+                    if (e.key === 'Enter') analyzeOdds();
+                });
+            });
+        });
+        
+        document.getElementById('toggleSettings').addEventListener('click', () => {
+            const panel = document.getElementById('settingsPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        });
+
+        function adjustThreshold(id, step) {
+            const el = document.getElementById(id);
+            let value = parseInt(el.textContent);
+            value = Math.min(100, Math.max(10, value + step));
+            el.textContent = value;
+        }
+        
+        const presets = {
+            safe: {
+                homeThreshold: 70,
+                drawThreshold: 50,
+                awayThreshold: 70,
+                bttsThreshold: 80,
+                over25Threshold: 80
+            },
+            balanced: {
+                homeThreshold: 50,
+                drawThreshold: 40,
+                awayThreshold: 50,
+                bttsThreshold: 50,
+                over25Threshold: 60
+            },
+            aggressive: {
+                homeThreshold: 40,
+                drawThreshold: 30,
+                awayThreshold: 50,
+                bttsThreshold: 60,
+                over25Threshold: 60
+            }
+        };
+
+        function applyPreset(mode) {
+            const preset = presets[mode];
+            if (!preset) return;
+
+            // Apply thresholds
+            for (let key in preset) {
+                const el = document.getElementById(key);
+                if (el) el.textContent = preset[key];
+            }
+
+            // Save to localStorage
+            localStorage.setItem('predictionPreset', mode);
+            localStorage.setItem('thresholdValues', JSON.stringify(preset));
+
+            // Update active button
+            const buttons = document.querySelectorAll('.preset-buttons button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            const buttonIndex = {
+                safe: 0,
+                balanced: 1,
+                aggressive: 2
+            };
+            buttons[buttonIndex[mode]].classList.add('active');
+
+            // Show profile reminder popup
+            showProfileReminder(capitalizeFirst(mode));
+        }
+
+        function showProfileReminder(profileName) {
+            const popup = document.getElementById('profileReminder');
+            popup.querySelector('.popup-content').innerHTML = `
+                <i class="fas fa-bullhorn"></i>
+                You're using the <strong>${profileName}</strong> prediction profile.
+                <br><small>Adjust before placing bets to minimize risk.</small>
+            `;
+            popup.classList.remove('hidden');
+
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 4000);
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // AUTO PREDICT toggle
+        const autoToggle = document.getElementById('autoPredictToggle');
+
+        autoToggle.addEventListener('change', () => {
+            const isAuto = autoToggle.checked;
+            localStorage.setItem('autoPredict', isAuto);
+
+            const panel = document.getElementById('settingsPanel');
+            panel.style.display = isAuto ? 'none' : 'block';
+            document.getElementById('autoModeNote').style.display = isAuto ? 'block' : 'none';
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Create profile reminder popup if not exists
+            if (!document.getElementById('profileReminder')) {
+                const popup = document.createElement('div');
+                popup.id = 'profileReminder';
+                popup.className = 'profile-popup hidden';
+                popup.innerHTML = '<div class="popup-content"></div>';
+                document.body.appendChild(popup);
+            }
+            
+            const autoPref = localStorage.getItem('autoPredict');
+            if (autoPref === 'false') {
+                document.getElementById('autoPredictToggle').checked = false;
+                document.getElementById('settingsPanel').style.display = 'block';
+                document.getElementById('autoModeNote').style.display = 'none';
+            } else {
+                document.getElementById('autoPredictToggle').checked = true;
+                document.getElementById('settingsPanel').style.display = 'none';
+                document.getElementById('autoModeNote').style.display = 'block';
+            }
+
+            const saved = localStorage.getItem('thresholdValues');
+            const preset = localStorage.getItem('predictionPreset');
+
+            if (saved) {
+                const values = JSON.parse(saved);
+                for (let key in values) {
+                    const el = document.getElementById(key);
+                    if (el) el.textContent = values[key];
+                }
+            }
+
+            if (preset) {
+                const buttons = document.querySelectorAll('.preset-buttons button');
+                const buttonIndex = {
+                    safe: 0,
+                    balanced: 1,
+                    aggressive: 2
+                };
+                buttons[buttonIndex[preset]].classList.add('active');
+                showProfileReminder(capitalizeFirst(preset));
+            }
+        });
+        
+        async function fetchOutcomeStats(homeOdds, drawOdds, awayOdds, tolerance = 0.3) {
+            const resultBox = document.getElementById('customStatsResult');
+            resultBox.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> Loading stats...</p>`;
+
+            try {
+                const [homeSnap, drawSnap, awaySnap] = await Promise.all([
+                    db.collection("matches")
+                        .where("odds1", ">=", homeOdds - tolerance)
+                        .where("odds1", "<=", homeOdds + tolerance)
+                        .get(),
+                    db.collection("matches")
+                        .where("oddsX", ">=", drawOdds - tolerance)
+                        .where("oddsX", "<=", drawOdds + tolerance)
+                        .get(),
+                    db.collection("matches")
+                        .where("odds2", ">=", awayOdds - tolerance)
+                        .where("odds2", "<=", awayOdds + tolerance)
+                        .get()
+                ]);
+
+                const homeIDs = new Set(homeSnap.docs.map(doc => doc.id));
+                const drawIDs = new Set(drawSnap.docs.map(doc => doc.id));
+                const awayIDs = new Set(awaySnap.docs.map(doc => doc.id));
+
+                const intersectIDs = [...homeIDs].filter(id => drawIDs.has(id) && awayIDs.has(id));
+                const docsMap = new Map();
+
+                for (const doc of [...homeSnap.docs, ...drawSnap.docs, ...awaySnap.docs]) {
+                    if (intersectIDs.includes(doc.id)) {
+                        docsMap.set(doc.id, doc.data());
+                    }
+                }
+
+                const filteredMatches = Array.from(docsMap.values());
+
+                let homeWins = 0, draws = 0, awayWins = 0;
+                let bttsCount = 0, over25Count = 0;
+                const scoreMap = {};
+
+                filteredMatches.forEach(match => {
+                    const outcome = match.outcome || "";
+                    const [h, a] = (match.result || "-").split("-").map(Number);
+
+                    if (!isNaN(h) && !isNaN(a)) {
+                        if (h > 0 && a > 0) bttsCount++;
+                        if (h + a > 2.5) over25Count++;
+
+                        const score = `${h}-${a}`;
+                        scoreMap[score] = (scoreMap[score] || 0) + 1;
+                    }
+
+                    if (outcome === "1") homeWins++;
+                    else if (outcome === "X") draws++;
+                    else if (outcome === "2") awayWins++;
+                });
+
+                const topScores = Object.entries(scoreMap)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([score, count]) => `<li>${score} — ${count} times</li>`)
+                    .join("");
+
+                const total = filteredMatches.length || 1;
+
+                resultBox.innerHTML = `
+                    <div style="margin-top: 10px;">
+                        <h4>📊 Stats from ${filteredMatches.length} similar matches</h4>
+                        <ul style="line-height: 1.6;">
+                            <li>🏠 Home Wins: <strong>${homeWins}</strong> (${((homeWins/total)*100).toFixed(1)}%)</li>
+                            <li>⚖️ Draws: <strong>${draws}</strong> (${((draws/total)*100).toFixed(1)}%)</li>
+                            <li>🛫 Away Wins: <strong>${awayWins}</strong> (${((awayWins/total)*100).toFixed(1)}%)</li>
+                            <li>🤝 GG (BTTS): <strong>${bttsCount}</strong> (${((bttsCount/total)*100).toFixed(1)}%)</li>
+                            <li>🎯 Over 2.5: <strong>${over25Count}</strong> (${((over25Count/total)*100).toFixed(1)}%)</li>
+                        </ul>
+
+                        ${topScores ? `
+                        <div style="margin-top: 10px;">
+                            <h5>🔢 Most Common Scores:</h5>
+                            <ul>${topScores}</ul>
+                        </div>` : ''}
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Error fetching outcome stats:", err);
+                resultBox.innerHTML = `<p style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
