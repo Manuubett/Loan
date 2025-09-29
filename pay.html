@@ -155,6 +155,11 @@
       color: var(--dark);
     }
 
+    .required-field::after {
+      content: " *";
+      color: var(--warning);
+    }
+
     .input-with-icon {
       position: relative;
     }
@@ -180,6 +185,14 @@
       border-color: var(--primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .input-with-icon input:required:not(:placeholder-shown):invalid {
+      border-color: var(--warning);
+    }
+
+    .input-with-icon input:required:valid {
+      border-color: #4caf50;
     }
 
     .submit-btn {
@@ -354,7 +367,7 @@
       
       <form id="paymentForm">
         <div class="form-group">
-          <label for="idNumber">National ID Number</label>
+          <label for="idNumber" class="required-field">National ID Number</label>
           <div class="input-with-icon">
             <i class="fas fa-id-card"></i>
             <input type="text" id="idNumber" placeholder="Enter your National ID" required>
@@ -362,7 +375,7 @@
         </div>
         
         <div class="form-group">
-          <label for="phone">Mobile Number</label>
+          <label for="phone" class="required-field">Mobile Number</label>
           <div class="input-with-icon">
             <i class="fas fa-phone"></i>
             <input type="tel" id="phone" placeholder="07XXXXXXXX" required>
@@ -370,14 +383,14 @@
         </div>
         
         <div class="form-group">
-          <label for="mpesaCode">M-PESA Confirmation Code</label>
+          <label for="mpesaCode" class="required-field">M-PESA Confirmation Code</label>
           <div class="input-with-icon">
             <i class="fas fa-receipt"></i>
             <input type="text" id="mpesaCode" placeholder="Enter M-PESA code" required>
           </div>
         </div>
         
-        <button type="button" class="submit-btn" onclick="submitPayment()">
+        <button type="submit" class="submit-btn">
           <i class="fas fa-paper-plane"></i> Submit Payment Details
         </button>
         
@@ -436,7 +449,9 @@
       return mpesaRegex.test(mpesaCode);
     }
 
-    async function submitPayment() {
+    async function submitPayment(event) {
+      event.preventDefault();
+      
       const idNumber = document.getElementById("idNumber").value.trim();
       const phone = document.getElementById("phone").value.trim();
       const mpesaCode = document.getElementById("mpesaCode").value.trim();
@@ -449,25 +464,34 @@
       // Validate inputs
       if (!idNumber || !phone || !mpesaCode) {
         msg.className = 'error';
-        msg.textContent = '⚠️ Please fill in all fields.';
+        msg.textContent = '⚠️ Please fill in all required fields.';
+        
+        // Highlight empty fields
+        if (!idNumber) document.getElementById("idNumber").style.borderColor = 'var(--warning)';
+        if (!phone) document.getElementById("phone").style.borderColor = 'var(--warning)';
+        if (!mpesaCode) document.getElementById("mpesaCode").style.borderColor = 'var(--warning)';
+        
         return;
       }
 
       if (!validateIdNumber(idNumber)) {
         msg.className = 'error';
         msg.textContent = '⚠️ Please enter a valid 8-digit National ID.';
+        document.getElementById("idNumber").style.borderColor = 'var(--warning)';
         return;
       }
 
       if (!validatePhone(phone)) {
         msg.className = 'error';
         msg.textContent = '⚠️ Please enter a valid Kenyan phone number (07XXXXXXXX).';
+        document.getElementById("phone").style.borderColor = 'var(--warning)';
         return;
       }
 
       if (!validateMpesaCode(mpesaCode)) {
         msg.className = 'error';
         msg.textContent = '⚠️ Please enter a valid M-PESA confirmation code.';
+        document.getElementById("mpesaCode").style.borderColor = 'var(--warning)';
         return;
       }
 
@@ -540,6 +564,9 @@
         this.style.borderColor = '#e1e5eb';
       }
     });
+
+    // Add form submit event listener
+    document.getElementById('paymentForm').addEventListener('submit', submitPayment);
   </script>
 </body>
-</html>
+  </html>
